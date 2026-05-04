@@ -1,0 +1,29 @@
+# Claude Code
+.claude/settings.local.json
+
+# Node / pnpm
+node_modules/
+.turbo/
+dist/
+build/
+*.tsbuildinfo
+
+# Vite
+.vite/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Supabase local dev
+supabase/.temp/
+supabase/.branches/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
