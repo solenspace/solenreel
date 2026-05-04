@@ -4,7 +4,7 @@ This is the only context file that mutates frequently. Update it after every mea
 
 ## Current phase
 
-**Structure bootstrap** — environment, six-file context, validated agents, validated skills installed via `skills.sh` (the script self-deletes after run). No source code yet.
+**Specs drafted, ready to execute spec 01.** Bootstrap is committed; netflix-clone source is imported as a separate commit; all 23 numbered specs are drafted in `specs/` with the canonical contract. No source modifications yet — that begins when spec 01 is executed in a separate run.
 
 ## Completed
 
@@ -17,33 +17,51 @@ This is the only context file that mutates frequently. Update it after every mea
 - 2026-05-04 — Six context files written: `project-overview`, `architecture`, `code-standards`, `ai-workflow-rules`, `ui-context`, `progress-tracker`.
 - 2026-05-04 — `CLAUDE.md`, `AGENTS.md`, `.gitignore`, `.claude/settings.json` written.
 - 2026-05-04 — `specs/` created empty (`.gitkeep` only) — spec authoring deferred to next run.
+- 2026-05-04 — `git init` on reel-app; bootstrap committed (commit 1); netflix-clone source imported verbatim into reel-app via clone+copy and committed (commit 2). `.gitignore` merged with netflix-clone's; `README.md` renamed to `NETFLIX-CLONE-README.md` for attribution.
+- 2026-05-04 — All 23 numbered specs drafted under `specs/`, each following the canonical contract (Goal · Dependencies · Design Decisions · Implementation · Success Criteria). No source modifications performed; spec execution is a future run.
+
+## Specs drafted (this run)
+
+| # | File | Phase |
+|---|---|---|
+| 01 | `01-prune-and-fsd-restructure.md` | Foundation |
+| 02 | `02-jsdoc-and-tooling-baseline.md` | Foundation |
+| 03 | `03-vitest-setup.md` | Foundation |
+| 04 | `04-supabase-foundation.md` | Auth migration |
+| 05 | `05-supabase-auth-migration.md` | Auth migration |
+| 06 | `06-profiles-schema-and-rls.md` | Auth migration |
+| 07 | `07-editorial-design-tokens.md` | Editorial UI |
+| 08 | `08-app-shell-and-routing.md` | Editorial UI |
+| 09 | `09-tmdb-data-layer.md` | TMDB |
+| 10 | `10-tile-and-row-primitives.md` | Primitives |
+| 11 | `11-home-popular-row.md` | Primitives |
+| 12 | `12-trailer-hover-autoplay.md` | Trailer |
+| 13 | `13-full-bleed-trailer-page.md` | Trailer |
+| 14 | `14-events-schema-and-rls.md` | Events |
+| 15 | `15-click-tracker-hook.md` | Events |
+| 16 | `16-recommendations-schema.md` | Recs |
+| 17 | `17-recommendations-edge-function.md` | Recs |
+| 18 | `18-for-you-row.md` | Recs |
+| 19 | `19-intent-search-edge-function.md` | AI |
+| 20 | `20-intent-mode-detection.md` | AI |
+| 21 | `21-intent-results-row.md` | AI |
+| 22 | `22-error-boundaries-and-a11y.md` | Polish |
+| 23 | `23-production-build-and-deploy.md` | Ship |
+
+The build order is intentional: foundation (FSD + tooling + tests) → auth → UI tokens → data → primitives → first home row → trailer behavior → events → recs → AI intent search → polish → ship.
 
 ## In progress
 
-Nothing. Bootstrap complete; awaiting the next run, which will draft the numbered specs into the empty `specs/` folder.
-
-## Next
-
-The next run drafts spec files into `specs/` in this order. Spec contract: **Goal · Dependencies · Design Decisions · Implementation · Success Criteria**.
-
-1. `specs/01-import-netflix-clone.md` — `git init`; clone netflix-clone; copy `src/`, `public/`, root configs into reel-app; install deps with pnpm; strip Firebase Auth references; verify `pnpm dev` boots the imported app.
-2. `specs/02-supabase-foundation.md` — Supabase project, env wiring, migrations for `profiles` + `events`, RLS policies, Supabase Auth UI replacing Firebase.
-3. `specs/03-tmdb-data-layer.md` — TanStack Query setup, TMDB axios wrapper in `src/shared/api/tmdb.js`, JSDoc typedefs for movie entity.
-4. `specs/04-editorial-ui-system.md` — Tailwind v4 token layer matching `ui-context.md`, base typography, navigation chrome, tile primitives.
-5. `specs/05-trailer-first-tiles.md` — `react-player` wrapper, hover-autoplay with 250 ms delay, `IntersectionObserver` lazy mount, fallback to poster on error.
-6. `specs/06-click-event-tracking.md` — `useClickTracker` hook, append-only writes to `events`, batching/dedupe, RLS verification tests.
-7. `specs/07-recommendation-row.md` — Edge Function `/recommendations` reads recent events + TMDB similarity, returns ranked list; "For You" widget consumes it; cold-start fallback to TMDB popular.
-8. `specs/08-ai-intent-search.md` — Search bar intent-mode detection, Edge Function `/intent-search` proxies to OpenRouter free model with JSON-schema-constrained response, results render as editorial row with reasoning per pick.
-
-The build order is intentional: data → UI primitives → behavior → intelligence.
+Nothing. Specs drafted; awaiting the next run, which executes spec 01 and continues sequentially through the list. Each spec executes against its own branch + commit; all five verification gates must pass before the next spec begins.
 
 ## Open questions (track until resolved)
 
-- Which exact OpenRouter free model is most reliable for the mood→ids task? Candidates: `openai/gpt-oss-20b:free`, `meta-llama/llama-3.3-70b-instruct:free`, others. Resolve in spec 08 with a 10–20 input test set.
-- Does trailer hover autoplay need an `IntersectionObserver` lazy mount on every tile, or only on tiles below the fold? Resolve in spec 05 with a perf measurement on a 20-tile row.
-- Should TMDB responses be cached server-side in Supabase (to dedupe across users) or only client-side via TanStack Query? Resolve in spec 03 — start client-only, escalate to server cache only if rate limits force it.
-- How does intent-mode detection feel in practice? The current heuristic ("> 3 words and at least one verb/adjective") may be too eager or too cautious. Resolve in spec 08 with manual tries, then iterate.
-- Trailer fallback when YouTube blocks embedding for a given video — do we silently fall back to poster art, or show an explicit "trailer unavailable" affordance? Resolve in spec 05.
+- Which exact OpenRouter free model is most reliable for the mood→ids task? Candidates: `openai/gpt-oss-20b:free`, `meta-llama/llama-3.3-70b-instruct:free`, others. Resolve in **spec 19** with a 10–20 input test set.
+- Does trailer hover autoplay need an `IntersectionObserver` lazy mount on every tile, or only on tiles below the fold? Resolve in **spec 12** with a perf measurement on a 20-tile row.
+- Should TMDB responses be cached server-side in Supabase (to dedupe across users) or only client-side via TanStack Query? Resolve in **spec 09** — start client-only, escalate to server cache only if rate limits force it.
+- How does intent-mode detection feel in practice? The current heuristic ("> 3 words and at least one mood-marker word") may be too eager or too cautious. Resolve in **spec 20** with manual tries, then iterate.
+- Trailer fallback when YouTube blocks embedding for a given video — do we silently fall back to poster art, or show an explicit "trailer unavailable" affordance? Resolve in **spec 12** (silent fallback chosen by default; revisit if user feedback says otherwise).
+- Lazy vs eager fetch of video keys per tile — current decision (spec 12) is lazy. Revisit if perf measurements show too many sequential network calls per row.
 
 ## Architecture decisions (append-only log)
 
