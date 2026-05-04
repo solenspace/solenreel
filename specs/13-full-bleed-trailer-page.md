@@ -60,3 +60,18 @@ Build the click-through destination: `/movie/:id` renders a full-bleed YouTube t
 7. All tests in this spec pass; `test-writer` confirms style.
 8. Mobile width (<640 px) renders hero + metadata stacked; no horizontal overflow.
 9. `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` all green; `fsd-architect` reports zero violations.
+
+## Agents & Skills
+
+**Agents (mandatory invocation):**
+- `fsd-architect` — runs after step 4 (router rewire). Verifies the page lives under `src/app/pages/movie-detail/`, consumers go through hooks not direct fetches.
+- `test-writer` — runs at step 6 for both test files. Validates `Esc`-keystroke assertion and the audio-enabled mode-`'full'` assertion.
+
+**Skills (consulted by the agents during this spec):**
+- `.claude/skills/web-design-guidelines/SKILL.md` — keyboard-navigation pattern (`/`, `Esc`, `Tab`, `Enter`).
+- `.claude/skills/vercel-react-best-practices/rules/async-suspense-boundaries.md` — informs the loading state placement.
+- `.claude/skills/vercel-composition-patterns/rules/architecture-compound-components.md` — `<Tile variant="compact" />` for the optional more-like-this row.
+
+**Notes:**
+- `react-player` v2.x. Audio is enabled here only because the click that brought the user counts as a user gesture per browser autoplay policy.
+- No `prompt-engineer` here.

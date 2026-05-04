@@ -22,7 +22,7 @@ Stand up a Vitest harness wired into Vite, with the global mocks every later spe
   - Stubs `ResizeObserver` with a no-op.
   - Mocks `react-player` default export with a stub `<div data-testid="player" data-playing={...} data-muted={...} />`.
   - Stubs `window.matchMedia` so tests can flip `prefers-reduced-motion` per case.
-  - Configures `@testing-library/jest-dom` matchers.
+  - Configures `@testing-library/jest-dom` matchers via `import '@testing-library/jest-dom/vitest'` (v6+ subpath; the bare `@testing-library/jest-dom` import deprecated in v6).
 - **No shared TanStack Query client across tests.** Each test that needs one creates a fresh `QueryClient` with `retry: false`, `staleTime: 0`. Helper at `src/shared/test/query-wrapper.jsx` exports a `withQuery(children)` factory.
 - **No shared Redux store across tests.** Helper at `src/shared/test/redux-wrapper.jsx` factories a fresh store per test, optionally pre-loaded.
 - **One sample test**: a behavioral test against `src/shared/ui/Button.jsx` (post-spec-01 path). It asserts the button renders its children, calls `onClick` when clicked, and respects the `disabled` prop. AAA structure, no implementation coupling.
@@ -71,3 +71,16 @@ Stand up a Vitest harness wired into Vite, with the global mocks every later spe
 4. The `react-player` stub renders `<div data-testid="player" />` instead of mounting a real iframe (verified by inspecting a test rendering a component that imports `react-player`).
 5. `pnpm typecheck` and `pnpm lint` pass with `// @ts-check` enforced on `vitest.config.js`, `src/test-setup.js`, and `Button.test.jsx`.
 6. `test-writer` agent reports the sample test as conforming (AAA structure, behavior-over-implementation, no snapshots, named clearly).
+
+## Agents & Skills
+
+**Agents (mandatory invocation):**
+- `test-writer` — invoked at step 8 to validate the sample test follows AAA structure, parameterized cases, and behavior-over-implementation rules.
+
+**Skills (consulted by the agents during this spec):**
+- `.claude/skills/vercel-react-best-practices/SKILL.md` — general React testing patterns (test isolation, query priorities).
+- `.claude/skills/vercel-react-best-practices/rules/client-event-listeners.md` — informs the IntersectionObserver / matchMedia stub patterns.
+
+**Notes:**
+- No `fsd-architect` here: no source-tree changes beyond test scaffolding files.
+- No `prompt-engineer` here.

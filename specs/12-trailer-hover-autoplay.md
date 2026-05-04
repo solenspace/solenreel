@@ -60,3 +60,20 @@ Make tiles autoplay their muted trailers on hover/focus instead of staying stati
 7. Per-autoplay scripting time stays under 50 ms (informal Chrome devtools check on a 20-tile row).
 8. `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` all green; `fsd-architect` reports zero violations.
 9. `progress-tracker.md` open question (lazy vs eager video-key fetching) is updated with the spec's chosen path (lazy) and a note about when to revisit.
+
+## Agents & Skills
+
+**Agents (mandatory invocation):**
+- `fsd-architect` — verifies `useTrailerOnHover` and `hover-store` live in `features/trailer/`, while `Tile.HoverPlayer` slot integration into `entities/movie/tile.jsx` follows the slot/composition pattern (entity stays presentational; the hook is what owns the side effect).
+- `test-writer` — runs at step 7 for the hook tests. Validates fake-timer-driven 250 ms / 100 ms assertions, IO-stub-driven gating, the matchMedia flip for prefers-reduced-motion.
+
+**Skills (consulted by the agents during this spec):**
+- **`.claude/skills/vercel-react-best-practices/rules/advanced-event-handler-refs.md`** — drives the ref-attached hover handler pattern.
+- `.claude/skills/vercel-react-best-practices/rules/advanced-effect-event-deps.md` — keeps the IO observer effect's deps array honest.
+- `.claude/skills/vercel-react-best-practices/rules/client-passive-event-listeners.md` — informs whether the hover listeners need `passive: true`.
+- `.claude/skills/web-design-guidelines/SKILL.md` — `prefers-reduced-motion` is the load-bearing accessibility rule for this spec.
+- `.claude/skills/vercel-composition-patterns/rules/state-decouple-implementation.md` — informs the `hover-store` slice design (one source of truth for "currently hovering tile").
+
+**Notes:**
+- `react-player` v2.x is the locked v1 player API; v3 (Nov 2025, breaking) is v1.1 backlog. Tests rely on the spec-03 stub.
+- No `prompt-engineer` here.

@@ -2,7 +2,7 @@
 
 ## Goal
 
-Render the recommendation result on home as the "For You" row, the differentiator over the cold-start popular row. After this spec, signed-in users see two rows on home: "For you" (powered by the rec function) on top, and "Popular this week" beneath. Cold-start users (fewer than 5 events) see a single rec row labeled identically but, internally, served by the cold-start fallback. The accent burnt-amber "For You" badge is the only visual cue distinguishing warm-start from cold-start.
+Render the recommendation result on home as the "For You" row, the differentiator over the cold-start popular row. After this spec, signed-in users see two rows on home: "For you" (powered by the rec function) on top, and "Popular this week" beneath. Cold-start users (fewer than 5 events) see a single rec row labeled identically but, internally, served by the cold-start fallback. The matte-purple "For You" badge is the only visual cue distinguishing warm-start from cold-start.
 
 ## Dependencies
 
@@ -55,7 +55,7 @@ Render the recommendation result on home as the "For You" row, the differentiato
 ## Success Criteria
 
 1. Signed-in user with `cold_start: true` sees one rec-style row labeled `"Recommended for you — keep clicking to teach me"` above Popular; no accent badge.
-2. Signed-in user with `cold_start: false` sees `"For you"` row with accent burnt-amber badge above Popular.
+2. Signed-in user with `cold_start: false` sees `"For you"` row with matte-purple accent badge (`--color-accent`, `#b69ad8`) above Popular.
 3. After clicking 5 tiles in a session, the recommendation query invalidates within 1.5 s and the row refreshes. (Manual + automated.)
 4. Tiles in the For You row carry `payload.source = 'for-you'` when clicked (verified by inspecting an `events` row).
 5. Pending state renders a skeleton row no longer than 800 ms before swapping to the loading text per `ui-context.md`.
@@ -63,3 +63,19 @@ Render the recommendation result on home as the "For You" row, the differentiato
 7. Movie details are resolved efficiently — 20 tmdb_ids → 20 parallel queries, no waterfall, no duplicate cache entries when an id is also in Popular.
 8. All tests in this spec pass.
 9. `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` all green; `fsd-architect` reports zero violations.
+
+## Agents & Skills
+
+**Agents (mandatory invocation):**
+- `fsd-architect` — verifies the widget lives at `widgets/for-you-row/` and consumes only `entities/recommendation` + `entities/movie`, never reaches into `features/`.
+- `test-writer` — runs at step 5 for the widget tests. Cold-start vs warm-start branching is parameterized.
+
+**Skills (consulted by the agents during this spec):**
+- **`.claude/skills/vercel-react-best-practices/rules/async-parallel.md`** — drives the parallel `useQueries` resolution of 20 movie ids; no waterfalls.
+- **`.claude/skills/vercel-react-best-practices/rules/client-swr-dedup.md`** — same query keys as Popular row → cache hits, no duplicate cache entries.
+- **`.claude/skills/vercel-composition-patterns/rules/architecture-compound-components.md`** — `Tile.Reasoning` slot is reserved here (populated by intent results in spec 21; null for content-based recs).
+- `.claude/skills/web-design-guidelines/SKILL.md` — accent badge placement and "≤ 3% pixel" discipline.
+
+**Notes:**
+- The matte-purple For You badge is the only visual difference between warm-start and cold-start. Title text changes too.
+- No `prompt-engineer` here.

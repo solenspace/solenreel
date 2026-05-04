@@ -59,3 +59,17 @@ Replace Firebase Auth with Supabase Auth across the codebase. After this spec, F
 8. All tests in this spec pass; `test-writer` confirms AAA structure and behavior-over-implementation.
 9. `pnpm typecheck`, `pnpm lint`, `pnpm build` all green.
 10. `fsd-architect` reports zero violations: `useAuthSession` is in `entities/user/`, not `features/`; only `src/shared/api/supabase.js` imports from `@supabase/supabase-js`.
+
+## Agents & Skills
+
+**Agents (mandatory invocation):**
+- `fsd-architect` — runs after every file move/delete in step 6, and after the slice/hook authoring in step 1, to verify entities/user does not import from features.
+- `test-writer` — invoked at step 9 for the three test files (use-auth-session, auth-actions, Login). Validates the parameterized error-path tests and the `onAuthStateChange` subscription test.
+
+**Skills (consulted by the agents during this spec):**
+- `.claude/skills/vercel-react-best-practices/rules/client-event-listeners.md` — informs how `onAuthStateChange` is subscribed once and unsubscribed on unmount.
+- `.claude/skills/vercel-react-best-practices/rules/advanced-init-once.md` — drives the "subscribe once at the providers boundary" pattern for `useAuthSession`.
+
+**Notes:**
+- No `prompt-engineer` here.
+- The Firebase deletions (firebase.json, .firebaserc, the workflow file) are physical-file removals; `fsd-architect` re-verifies after deletions land.

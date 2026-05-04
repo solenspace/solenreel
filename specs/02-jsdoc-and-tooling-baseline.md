@@ -90,3 +90,16 @@ Make the JS-with-JSDoc discipline documented in `code-standards.md` mechanically
 6. Adding a `// @ts-ignore` line makes `pnpm lint` fail.
 7. Adding a deliberate type error (e.g., `/** @type {number} */ const x = "string"`) makes `pnpm typecheck` fail.
 8. `pnpm dev` still boots and renders the post-spec-01 app (no runtime regression from the tooling pass).
+
+## Agents & Skills
+
+**Agents (mandatory invocation):**
+- `fsd-architect` — validates that the `import/no-restricted-paths` zone definitions correctly encode the FSD upward-only direction across all five layers. Run after step 4 (eslint.config.js authoring) and re-run after step 8 (full lint pass).
+
+**Skills (consulted by the agents during this spec):**
+- `.claude/skills/vercel-react-best-practices/rules/bundle-barrel-imports.md` — informs the "no barrel files" lint rule the FSD architect enforces.
+- `.claude/skills/vercel-composition-patterns/rules/architecture-avoid-boolean-props.md` — referenced indirectly through the JSDoc requirement for documenting prop shapes.
+
+**Notes:**
+- No `test-writer` here: tests authored in spec 03.
+- No `prompt-engineer` here.

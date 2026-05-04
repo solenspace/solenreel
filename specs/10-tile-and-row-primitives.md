@@ -77,3 +77,20 @@ Replace the netflix-clone's `MovieCard` and `MovieRow` with reel's editorial til
 7. All tests in this spec pass; `test-writer` confirms style.
 8. `fsd-architect` reports zero violations.
 9. `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` all green.
+
+## Agents & Skills
+
+**Agents (mandatory invocation):**
+- `fsd-architect` — verifies `Tile` lives in `entities/movie/`, `Row` lives in `widgets/`, neither imports from features. Run after step 4 (legacy-file deletion).
+- `test-writer` — runs at step 5 for tile and row tests. Validates parameterized-over-variant tests for `Tile`; validates lazy-render assertion in `Row` (only 12 tiles eagerly mounted).
+
+**Skills (consulted by the agents during this spec):**
+- **`.claude/skills/vercel-composition-patterns/rules/architecture-compound-components.md`** — drives the `<Tile.Slot />` API design (this is the spec where compound components are introduced).
+- `.claude/skills/vercel-composition-patterns/rules/patterns-explicit-variants.md` — informs `variant='grid'|'list'|'compact'` over a stack of boolean props.
+- `.claude/skills/vercel-composition-patterns/rules/architecture-avoid-boolean-props.md` — same direction.
+- `.claude/skills/vercel-react-best-practices/rules/client-event-listeners.md` — informs the keyboard-nav handler in `Row`.
+- `.claude/skills/web-design-guidelines/SKILL.md` — density rules from `ui-context.md` derive from this skill.
+
+**Notes:**
+- No `prompt-engineer` here.
+- The accent badge slot on `Row` (used by spec 18 For You row) renders matte purple per `ui-context.md`.

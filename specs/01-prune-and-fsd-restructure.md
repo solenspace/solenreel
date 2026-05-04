@@ -59,7 +59,7 @@ A concrete file-touched checklist. Every item is a move + import-path update or 
       --color-accent-ink: #0a0a0a;
     }
     ```
-   This is a **placeholder** — spec 07 swaps it for the editorial palette.
+   This is a **placeholder** — spec 07 swaps it for the editorial matte-purple-on-black palette.
 7. Update any class references in JSX that used Netflix tokens (`bg-red`, `text-red`, etc.) to neutral equivalents (`bg-accent`, `text-accent`). Visual change is acknowledged: red → gray.
 8. Update `@/` alias usage everywhere to match the new layer paths.
 9. Verify nothing left over: `ls src/components`, `ls src/features`, `ls src/hooks`, `ls src/pages`, `ls src/layouts`, `ls src/api`, `ls src/utils`, `ls src/icons`, `ls src/store` should all error (the folders are gone).
@@ -74,3 +74,15 @@ A concrete file-touched checklist. Every item is a move + import-path update or 
 5. Visual smoke test: home view loads, the previously-red accents now render in placeholder gray, no console errors.
 6. `fsd-architect` agent invocation reports zero layer-direction violations on the post-restructure tree.
 7. `git log --oneline` shows the restructure commit using `git mv` (verifiable by `git log --follow -- <new-path>` showing the old path).
+
+## Agents & Skills
+
+**Agents (mandatory invocation):**
+- `fsd-architect` — runs after step 9 (every move complete) to verify upward-only import direction and zero sideways imports. Reads `.claude/skills/web-design-guidelines/SKILL.md` for FSD/layout-pattern context.
+
+**Skills (consulted during this spec):**
+- `.claude/skills/web-design-guidelines/SKILL.md` — informs the placeholder header chrome and how layer folders should be named.
+
+**Notes:**
+- No `test-writer` invocation: this spec adds zero behavior; tests are unchanged from the imported state.
+- No `prompt-engineer` invocation: no LLM surface in this spec.

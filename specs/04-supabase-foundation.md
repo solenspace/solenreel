@@ -22,8 +22,9 @@ Stand up the Supabase project that reel uses for auth, data, and Edge Functions.
   - `VITE_SUPABASE_URL` — public-readable; lives in the bundle.
   - `VITE_SUPABASE_ANON_KEY` — public-readable; lives in the bundle.
   - `VITE_TMDB_API_KEY` — public-readable per TMDB's intent; carried over from netflix-clone.
-  - `SUPABASE_SERVICE_ROLE_KEY` — Edge-Function-only, never in the bundle. Set in Supabase dashboard env.
-  - `OPENROUTER_API_KEY` — Edge-Function-only, set in Supabase dashboard env. Reading this from `src/` is a defect (enforced in spec 19).
+  - `SUPABASE_SERVICE_ROLE_KEY` — Edge-Function-only, never in the bundle. Set via `pnpx supabase secrets set --env-file .env.functions` (a separate, gitignored env file under `supabase/`).
+  - `OPENROUTER_API_KEY` — Edge-Function-only, also set via `pnpx supabase secrets set`. Reading this from `src/` is a defect (enforced in spec 19).
+  - `OPENROUTER_MODEL` — Edge-Function-only env variable. Locked v1 value: `openai/gpt-oss-20b:free` (131K context, $0/M tokens, structured outputs supported per OpenRouter model registry as of 2026-05-04).
 - **Singleton client** at `src/shared/api/supabase.js` exports a single `supabase` object. The whole codebase imports from there. Any other file that imports `@supabase/supabase-js` is a defect (`fsd-architect` enforces).
 - **Supabase CLI** installed as a devDependency (`supabase` package on npm). Local dev uses `supabase link` to bind the repo to the project.
 - **`supabase/` folder at repo root**: created by `supabase init`. Contents: `config.toml`, `migrations/` (empty in this spec — populated in spec 06), `functions/` (empty — populated in spec 17). `supabase/.temp/` and `supabase/.branches/` are gitignored.
@@ -59,3 +60,15 @@ Stand up the Supabase project that reel uses for auth, data, and Edge Functions.
 6. `supabase/` folder exists with `config.toml`; `migrations/` and `functions/` exist and are empty.
 7. `pnpm test` passes including the new `supabase.test.jsx`.
 8. `fsd-architect` reports zero violations of the single-Supabase-client invariant.
+
+## Agents & Skills
+
+**Agents (mandatory invocation):**
+- `fsd-architect` — verifies the single-Supabase-client invariant after step 7 (client created) and step 10 (lint rule encoded). Reads its source-of-truth context from `architecture.md` §"Invariants" 9.
+
+**Skills (consulted by the agents during this spec):**
+- `.claude/skills/vercel-react-best-practices/rules/bundle-defer-third-party.md` — informs how the Supabase client is initialized once and imported lazily where useful.
+
+**Notes:**
+- No `test-writer` invocation beyond the simple smoke test in step 9; the spec does not author behavioral tests.
+- Edge Function secrets (`SUPABASE_SERVICE_ROLE_KEY`, `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`) are set via the CLI command in Design Decisions; the file `.env.functions` is gitignored. Spec 19 verifies the keys are unreachable from the browser bundle.

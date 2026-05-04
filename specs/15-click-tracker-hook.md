@@ -84,3 +84,19 @@ Wire the client side of the events pipeline. After this spec, every meaningful i
 7. Sign-out clears the in-memory queue (verifiable via test or by signing out mid-buffer).
 8. All tests in this spec pass; `test-writer` confirms style.
 9. `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` all green; `fsd-architect` reports zero violations (the hook lives in `features/`, calls `supabase` only via the singleton from `shared/api/supabase.js`).
+
+## Agents & Skills
+
+**Agents (mandatory invocation):**
+- `fsd-architect` — verifies the hook lives in `features/click-tracker/` and that all `supabase.from('events').insert(...)` calls go through the shared client.
+- `test-writer` — runs at step 5 for the hook + wiring tests. Validates fake-timer-driven flush triggers + dedupe-set assertions.
+
+**Skills (consulted by the agents during this spec):**
+- **`.claude/skills/vercel-react-best-practices/rules/advanced-effect-event-deps.md`** — drives the visibilitychange listener subscription pattern.
+- `.claude/skills/vercel-react-best-practices/rules/advanced-event-handler-refs.md` — keeps the `track` function reference stable across re-renders.
+- `.claude/skills/vercel-react-best-practices/rules/client-event-listeners.md` — sendBeacon and `keepalive: true` patterns.
+- `.claude/skills/vercel-composition-patterns/rules/state-context-interface.md` — drives `<TrackingProvider source>` context shape.
+
+**Notes:**
+- Module-scoped queue (not React state) is intentional: the queue must survive component unmounts during route transitions.
+- No `prompt-engineer`.

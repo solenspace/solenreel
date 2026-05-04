@@ -2,7 +2,7 @@
 
 ## Goal
 
-Replace the placeholder grayscale palette (set in spec 01) with reel's real editorial palette per `ui-context.md`: warm-neutral background, ink/ink-muted/ink-faint text, burnt-amber accent used sparingly. Wire up the editorial typography stack (`Newsreader` serif for display, `Inter` sans for body, `JetBrains Mono` for dev affordances). Both dark (default) and light mode tokens land. After this spec, the app *looks* like reel even though tile/row primitives, trailer behavior, and feature surfaces are still pre-reel structures.
+Replace the placeholder grayscale palette (set in spec 01) with reel's real editorial palette per `ui-context.md`: **black-dominant canvas with a single matte-purple accent** (`--color-bg #0a090c`, `--color-accent #b69ad8`), ink/ink-muted/ink-faint text. Wire up the editorial typography stack (`Newsreader` serif for display, `Inter` sans for body, `JetBrains Mono` for dev affordances). Dark is the default; light is opt-in via `data-theme="light"` using Tailwind v4's `@custom-variant` mechanism. After this spec, the app *looks* like reel even though tile/row primitives, trailer behavior, and feature surfaces are still pre-reel structures.
 
 ## Dependencies
 
@@ -14,19 +14,23 @@ Replace the placeholder grayscale palette (set in spec 01) with reel's real edit
 ## Design Decisions
 
 - **Tailwind v4 `@theme` block** is the single source of truth for color and font tokens. CSS variables are emitted from there and used directly via Tailwind utilities (`bg-bg`, `text-ink`, `text-ink-muted`, `bg-accent`, etc.).
-- **Token names mirror `ui-context.md` exactly** (no renames):
+- **Token names mirror `ui-context.md` exactly** (no renames). Dark palette is the default `@theme` block:
     ```css
+    @import "tailwindcss";
+    @custom-variant light (&:where([data-theme=light], [data-theme=light] *));
+
     @theme {
-      --color-bg: #0f0d0b;
-      --color-bg-elevated: #181513;
-      --color-bg-overlay: #0a0908cc;
-      --color-ink: #ece6d8;
-      --color-ink-muted: #bfb8a8;
-      --color-ink-faint: #7a7466;
-      --color-border: #2a2622;
-      --color-border-subtle: #1c1917;
-      --color-accent: #e85d3a;
-      --color-accent-ink: #0f0d0b;
+      --color-bg: #0a090c;
+      --color-bg-elevated: #14121a;
+      --color-bg-overlay: #08070bcc;
+      --color-ink: #ece8f0;
+      --color-ink-muted: #a89fb3;
+      --color-ink-faint: #6b6377;
+      --color-border: #27232e;
+      --color-border-subtle: #1a161f;
+      --color-accent: #b69ad8;
+      --color-accent-strong: #9b7bc9;
+      --color-accent-ink: #15101e;
       --color-success: #7ea96b;
       --color-danger: #c64a3a;
 
@@ -35,7 +39,21 @@ Replace the placeholder grayscale palette (set in spec 01) with reel's real edit
       --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
     }
     ```
-- **Light mode** is opt-in via a `data-theme="light"` attribute on `<html>`. Tokens are overridden inside `[data-theme="light"]` block in `src/main.css`. No system-pref auto-switch in v1 (defer to spec 22 a11y polish — `prefers-color-scheme` honored only if v1 ships dark-only).
+- **Light mode** is opt-in via `data-theme="light"` on `<html>`. Implemented via Tailwind v4's `@custom-variant light` (declared above) so utilities like `light:bg-bg-light` work. The light-palette token values are overridden in a `[data-theme=light]` selector block following the `@theme` declaration:
+    ```css
+    [data-theme=light] {
+      --color-bg: #faf8fb;
+      --color-bg-elevated: #f1eef5;
+      --color-ink: #1a1620;
+      --color-ink-muted: #5a5363;
+      --color-ink-faint: #8e8898;
+      --color-border: #d8d1de;
+      --color-accent: #6b4ba0;
+      --color-accent-strong: #553a82;
+      --color-accent-ink: #fafafa;
+    }
+    ```
+  No `prefers-color-scheme` auto-switch in v1; the user opts in by toggling `data-theme`.
 - **Font hosting**: `@fontsource/newsreader`, `@fontsource/inter`, `@fontsource/jetbrains-mono` packages — self-hosted, no external CDN. Imported once in `src/main.jsx`. Licensed OFL/SIL, free to bundle.
 - **Variable fonts**: `Newsreader` and `Inter` are variable; subset to `latin` to keep bundle size down. Weights used: 400, 500, 600 for both.
 - **Tabular numerics**: enabled by default in `Inter` via `font-feature-settings: 'tnum'` in the base layer (so `13:42` durations align across rows without per-instance opt-in).
@@ -63,17 +81,30 @@ Replace the placeholder grayscale palette (set in spec 01) with reel's real edit
 5. Update any pages/widgets/features that referenced the spec-01 placeholder tokens (`bg-bg`, `text-ink`, `bg-accent`, etc.) — token names didn't change, so most usages are already correct; just validate with a grep and fix any drift.
 6. Add a `Token` reference page under `src/app/pages/_dev/tokens.jsx` (dev-only route, hidden from production via `import.meta.env.DEV`) that renders every token as a swatch — useful for visual verification and for future spec authors.
 7. Add a snapshot-style test at `src/main.css.test.js`: parses `main.css`, asserts every token from `ui-context.md` is present and has the documented value (catches accidental drift). Implementation: use `postcss` to parse the CSS, walk the `@theme` block, compare.
-8. Run all gates. Manual smoke: load the dev server, walk every existing route, confirm the burnt-amber accent appears only on accent-class elements (Buttons, etc.), background is warm-neutral dark, type renders Newsreader on titles and Inter on body.
+8. Run all gates. Manual smoke: load the dev server, walk every existing route, confirm the matte-purple accent appears only on accent-class elements (Buttons, For You badge, focus rings), background is near-black, type renders Newsreader on titles and Inter on body.
 9. Toggle `data-theme="light"` via dev tools; confirm light tokens apply.
-10. Commit as `feat: editorial design tokens (warm-neutral palette, Newsreader+Inter)`.
+10. Commit as `feat: editorial design tokens (matte purple on black-dominant canvas, Newsreader+Inter)`.
 
 ## Success Criteria
 
 1. `src/main.css` `@theme` block matches `ui-context.md` token-for-token. Verifiable by the css test in step 7.
-2. Loading the home view shows warm-neutral background (`#0f0d0b`), ink-colored text (`#ece6d8`), and burnt-amber accent visible only on Buttons / accent-flagged elements (≤ 3% of pixels in the viewport, manually verified).
+2. Loading the home view shows near-black background (`#0a090c`), ink-colored text (`#ece8f0`), and matte-purple accent visible only on Buttons / accent-flagged elements (≤ 3% of pixels in the viewport, manually verified).
 3. Movie titles render in `Newsreader` serif; metadata renders in `Inter` sans (visible via dev-tools computed font).
 4. Setting `document.documentElement.dataset.theme = 'light'` swaps to the light palette without a refresh.
 5. The dev-only `/tokens` route renders one swatch per token, labeled with the token name and computed value.
-6. `:focus-visible` shows a 2px burnt-amber ring on every interactive element.
+6. `:focus-visible` shows a 2px matte-purple ring (`--color-accent`, `#b69ad8`) on every interactive element.
 7. `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` all green.
 8. Bundle size for fonts stays under 200 KB (variable Newsreader + variable Inter latin subsets + Mono 400). Verifiable from the Vite build report.
+
+## Agents & Skills
+
+**Agents (mandatory invocation):**
+- `fsd-architect` — verifies tokens are consumed via Tailwind utilities (`bg-bg`, `text-ink`, `bg-accent`, etc.) rather than inline `style={{ color: '#b69ad8' }}` literals scattered across components. Run after step 5 (consumer validation).
+
+**Skills (consulted by the agents during this spec):**
+- `.claude/skills/web-design-guidelines/SKILL.md` — drives the editorial / material-friendly vocabulary, contrast targets (WCAG AA), and the "≤ 3% accent pixels" discipline.
+- `.claude/skills/vercel-react-best-practices/rules/bundle-defer-third-party.md` — informs the font-loading strategy (variable fonts subset to `latin`, no FOUT mitigation hack).
+
+**Notes:**
+- No `test-writer` here for behavioral tests; the css test in step 7 is a structural assertion authored manually.
+- Palette is matte-purple-on-black (`--color-bg #0a090c`, `--color-accent #b69ad8`); no burnt-amber survives anywhere in the codebase post-this-spec.

@@ -41,10 +41,11 @@ Land the second migration: an append-only `events` table that records every per-
   - `id` is `bigserial`, not `uuid`. Reason: events are per-user, never cross-tenant, and a monotonic int makes batch flushing easier (see spec 15). UUIDs would add 16 bytes per row for no win.
   - `payload` is `jsonb` for forward flexibility (e.g., adding `dwell_ms` later for hover events without a migration). v1 payload contents documented in spec 15.
   - Two indexes — the desc one is for "recent events" queries (recommendations), the per-tmdb_id one is for "have I seen this movie before" lookups (dedupe in spec 15).
-- **RLS policies** (greppable names):
-  - `events_select_own` — `for select using (auth.uid() = user_id)`.
-  - `events_insert_own` — `for insert with check (auth.uid() = user_id)`.
+- **RLS policies** (greppable names; uses Supabase's recommended `to authenticated` + `(select auth.uid())` form for performance per current docs):
+  - `events_select_own` — `for select to authenticated using ((select auth.uid()) = user_id)`.
+  - `events_insert_own` — `for insert to authenticated with check ((select auth.uid()) = user_id)`.
   - **No update policy.** No delete policy. The append-only invariant is enforced by the absence of those policies, not by a check constraint (constraints are weaker and allow update via privilege escalation). RLS without an `update`/`delete` policy denies them by default.
+  - `to authenticated` skips evaluating the policy for `anon`. `(select auth.uid())` triggers initPlan caching — important because `events` will accumulate fast.
   - Service role inside Edge Functions bypasses RLS — that's the only way `events` rows are ever read across users (only the user themselves; even the rec function reads only one user's events at a time using the user's JWT, not service role, see spec 17).
 - **Validation** at the DB layer:
   - `tmdb_id > 0` check constraint (catches 0/negative bugs early).
@@ -79,3 +80,16 @@ Land the second migration: an append-only `events` table that records every per-
 7. `src/shared/types/supabase.js` exports `Event` + `EventKind` typedefs after `pnpm types:gen`.
 8. All RLS / constraint tests in `event.test.js` pass against the local Supabase dev branch.
 9. `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` all green.
+
+## Agents & Skills
+
+**Agents (mandatory invocation):**
+- `test-writer` — runs at step 4 for the seven RLS / constraint tests. Validates parameterized cases over policy + operation × authorized/unauthorized.
+
+**Skills (consulted by the agents during this spec):**
+- *(no project-level skill is directly relevant; this is a SQL-only spec.)*
+
+**Notes:**
+- No `fsd-architect` invocation; only the protected `src/shared/types/supabase.js` is touched (regenerated).
+- No `prompt-engineer`.
+- The migration filename `0002_events.sql` is set as immutable by `ai-workflow-rules.md` §"Protected files".

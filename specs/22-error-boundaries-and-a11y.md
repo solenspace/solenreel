@@ -82,3 +82,18 @@ Tighten the rough edges before deploy. Repurpose the existing `ErrorBoundary`/`E
 8. Contrast tests in `main.css.test.js` pass for every token pair; manual axe-core scan returns no AA violations.
 9. All tests pass; `test-writer` confirms style.
 10. `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` all green; `fsd-architect` reports zero violations.
+
+## Agents & Skills
+
+**Agents (mandatory invocation):**
+- `fsd-architect` — verifies route-level `<ErrorBoundary>` placement and the centralized `error-messages.js` catalog (no inline error strings scattered across components).
+- `test-writer` — runs at step 11 for error-fallback tests (parameterized over codes), row arrow-key tests, search-bar aria-label tests.
+
+**Skills (consulted by the agents during this spec):**
+- **`.claude/skills/web-design-guidelines/SKILL.md`** — accessibility, contrast, keyboard navigation, motion preferences (the load-bearing skill for this spec).
+- `.claude/skills/vercel-react-best-practices/rules/client-passive-event-listeners.md` — informs the global keyboard listeners' `passive` flag.
+
+**Notes:**
+- `prefers-reduced-motion: reduce` honored across trailer hover (spec 12), Framer Motion transitions, skeleton shimmer.
+- Contrast verified at WCAG AA: matte-purple `#b69ad8` on `#0a090c` is ~9.8:1 (well above 4.5:1).
+- No `prompt-engineer` here.

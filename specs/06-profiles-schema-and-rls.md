@@ -25,11 +25,12 @@ Land the first Supabase migration: a `profiles` table that 1:1 mirrors `auth.use
     );
     alter table public.profiles enable row level security;
     ```
-- **RLS policies** (named so they're greppable later):
-  - `profiles_select_own` — `for select using (auth.uid() = id)`
-  - `profiles_insert_own` — `for insert with check (auth.uid() = id)`
-  - `profiles_update_own` — `for update using (auth.uid() = id) with check (auth.uid() = id)`
-  - **No delete policy** — profile rows are deleted only via the `on delete cascade` from `auth.users`. Clients cannot delete profile rows directly.
+- **RLS policies** (named so they're greppable later; uses Supabase's recommended `to authenticated` + `(select auth.uid())` form for performance per current docs):
+  - `profiles_select_own` — `for select to authenticated using ((select auth.uid()) = id)`
+  - `profiles_insert_own` — `for insert to authenticated with check ((select auth.uid()) = id)`
+  - `profiles_update_own` — `for update to authenticated using ((select auth.uid()) = id) with check ((select auth.uid()) = id)`
+  - **No delete policy** — profile rows are deleted only via the `on delete cascade` from `auth.users`. Clients cannot delete profile rows directly. RLS denies UPDATE/DELETE by default when no policy exists for the operation.
+  - `to authenticated` skips evaluating the policy for `anon` users (faster, clearer intent). `(select auth.uid())` triggers Postgres initPlan caching, faster query plans on tables with many rows.
 - **Trigger** to auto-create a profile on signup:
     ```sql
     create function public.handle_new_user()
@@ -78,3 +79,16 @@ Land the first Supabase migration: a `profiles` table that 1:1 mirrors `auth.use
 6. Editing `src/shared/types/supabase.js` by hand produces an ESLint warning.
 7. All RLS/trigger tests in `profile.test.js` pass against the local Supabase dev branch.
 8. `pnpm typecheck`, `pnpm lint`, `pnpm build` all green.
+
+## Agents & Skills
+
+**Agents (mandatory invocation):**
+- `test-writer` — drives the RLS test suite at step 6. Each policy gets at least one positive case (signed-in owner can do X) and one negative case (signed-in non-owner blocked, anon blocked). Parameterized over policy names.
+
+**Skills (consulted by the agents during this spec):**
+- *(no project-level skill is directly relevant; this is a SQL-only spec. The test-writer agent's source-of-truth is its own definition + `code-standards.md`.)*
+
+**Notes:**
+- No `fsd-architect` invocation (no source-tree changes outside the protected `src/shared/types/supabase.js` regen).
+- No `prompt-engineer` invocation.
+- The migration filename `0001_profiles.sql` is set as immutable by `ai-workflow-rules.md` §"Protected files" — never edited in place; future schema changes ship in new numbered migrations.

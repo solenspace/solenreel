@@ -28,8 +28,8 @@ Land the third migration: a `recommendations` table that caches each user's most
   - `items` is `jsonb` of `{ tmdb_id: int, score: number, reason: string | null }` objects, ordered by score desc. Capped at 50 items per row by a check constraint.
   - `computed_at` lets the UI display "recommendations updated 5 minutes ago" if useful (not in v1 UI; available for spec 23 or beyond).
   - `computed_from_event_count` is a debug breadcrumb — how many events were considered. Useful when investigating "why are my recs the same as a cold start?" — answer is in the row.
-- **RLS policies**:
-  - `recommendations_select_own` — `for select using (auth.uid() = user_id)`.
+- **RLS policies** (uses Supabase's recommended `to authenticated` + `(select auth.uid())` form):
+  - `recommendations_select_own` — `for select to authenticated using ((select auth.uid()) = user_id)`.
   - **No insert/update/delete policy** for clients. The only writes are from the Edge Function using the service role key (which bypasses RLS).
   - This is symmetric to `events`: clients are read-only here, write-only over there.
 - **Check constraint**: `jsonb_array_length(items) <= 50` so the row stays bounded.
@@ -80,3 +80,16 @@ Land the third migration: a `recommendations` table that caches each user's most
 7. `src/entities/recommendation/types.js` defines the camelCase `Recommendation` and `RecommendationItem` typedefs reel uses.
 8. All tests in this spec pass.
 9. `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` all green.
+
+## Agents & Skills
+
+**Agents (mandatory invocation):**
+- `test-writer` — runs at step 5 for the seven RLS / constraint / cascade tests.
+
+**Skills (consulted by the agents during this spec):**
+- *(no project-level skill is directly relevant; SQL-only spec.)*
+
+**Notes:**
+- No `fsd-architect` (only the protected types file is touched, regenerated).
+- No `prompt-engineer`.
+- The migration filename `0003_recommendations.sql` is immutable per `ai-workflow-rules.md` §"Protected files".

@@ -82,3 +82,18 @@ Land the TMDB data access pattern reel uses for the rest of its life: a singleto
 6. `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` all green.
 7. Bundle size for the data layer code stays modest; no spike from importing TanStack Query a second time.
 8. `fsd-architect` reports zero violations.
+
+## Agents & Skills
+
+**Agents (mandatory invocation):**
+- `fsd-architect` — verifies the single TMDB-client invariant (axios only inside `src/shared/api/tmdb.js`) and the no-fetch-in-useEffect rule. Run after step 5 (consumer refactor).
+- `test-writer` — runs at step 6 for the two test files (tmdb.test, queries.test). Validates parameterized-over-endpoint tests + the `useDebounce` assertion in `useSearchMulti`.
+
+**Skills (consulted by the agents during this spec):**
+- `.claude/skills/vercel-react-best-practices/rules/client-swr-dedup.md` — drives query-key conventions and de-duplication strategy.
+- `.claude/skills/vercel-react-best-practices/rules/async-parallel.md` — informs how multiple TMDB calls can be parallelized via `Promise.all` inside details fetching.
+- `.claude/skills/vercel-react-best-practices/rules/bundle-barrel-imports.md` — keeps imports concrete (no barrel re-exports).
+
+**Notes:**
+- No `prompt-engineer` here.
+- TanStack Query v5 confirmed: `gcTime` (formerly `cacheTime`), `useQueries` for parallel fetches, `queryClient.invalidateQueries({ queryKey })` for invalidation.

@@ -1,43 +1,55 @@
 # reel — UI Context
 
-The reel UI takes its cues from editorial film coverage (Letterboxd, Criterion, magazine reviews). It is **dense, typographic, and low-chrome**: the trailer carries the visual weight, the type carries the meaning, and the chrome stays out of the way. Netflix wins on big poster art; reel wins on signal density.
+The reel UI takes its cues from editorial film coverage (Letterboxd, Criterion, magazine reviews). It is **dense, typographic, low-chrome, and material-friendly**: the trailer carries the visual weight, the type carries the meaning, the chrome stays out of the way, and a single matte-purple accent appears sparingly against a black-dominant canvas. Netflix wins on big poster art; Letterboxd wins on green-on-black; reel takes the same density formula and rotates the accent to matte purple. Not futuristic, not neon — material-like, friendly, calm.
 
 ## Theme
 
-Dark-mode-first. A light mode exists for daytime browsing but is not the design canvas — most of the design language is tuned in the dark.
+Dark-by-default with a black-dominant canvas (≥ 95% of pixel area in any view is `bg` + `bg-elevated`). A light mode is opt-in via `data-theme="light"` for daytime browsing but is not the design canvas. Tailwind v4 ships dark as the default `@theme` block; the light variant is declared via `@custom-variant light (&:where([data-theme=light], [data-theme=light] *))`.
 
-## Color tokens (CSS variables in `src/app/globals.css`)
+## Color tokens (CSS variables in `src/main.css` `@theme` block)
 
-### Dark (default)
-
-| Token | Value | Use |
-|---|---|---|
-| `--bg` | `#0f0d0b` | page background, warm-neutral near-black |
-| `--bg-elevated` | `#181513` | cards, hovered tile states |
-| `--bg-overlay` | `#0a0908cc` | trailer overlay, modal scrim |
-| `--ink` | `#ece6d8` | primary text |
-| `--ink-muted` | `#bfb8a8` | metadata, secondary text |
-| `--ink-faint` | `#7a7466` | tertiary text, placeholders |
-| `--border` | `#2a2622` | dividers, tile borders |
-| `--border-subtle` | `#1c1917` | row separators |
-| `--accent` | `#e85d3a` | burnt amber — buttons, "For You" badge, intent-mode indicator. Used sparingly. |
-| `--accent-ink` | `#0f0d0b` | text on accent backgrounds |
-| `--success` | `#7ea96b` | confirmation states (rare) |
-| `--danger` | `#c64a3a` | destructive confirmations (very rare) |
-
-### Light
+### Dark (default) — matte purple accent on near-black
 
 | Token | Value | Use |
 |---|---|---|
-| `--bg` | `#fafaf7` | page background |
-| `--bg-elevated` | `#f0eee8` | cards |
-| `--ink` | `#1a1816` | primary text |
-| `--ink-muted` | `#615a4d` | metadata |
-| `--ink-faint` | `#a39d8e` | tertiary |
-| `--border` | `#d8d4ca` | dividers |
-| `--accent` | `#c44a28` | burnt amber, slightly darker for AA contrast on light |
+| `--color-bg` | `#0a090c` | page background — near-black with hint of warm violet |
+| `--color-bg-elevated` | `#14121a` | cards, hovered tile state |
+| `--color-bg-overlay` | `#08070bcc` | trailer overlay, modal scrim |
+| `--color-ink` | `#ece8f0` | primary text |
+| `--color-ink-muted` | `#a89fb3` | metadata, secondary text |
+| `--color-ink-faint` | `#6b6377` | tertiary text, placeholders |
+| `--color-border` | `#27232e` | dividers, tile borders |
+| `--color-border-subtle` | `#1a161f` | row separators |
+| `--color-accent` | `#b69ad8` | matte lavender — For You badge, intent-mode indicator, focus rings, primary CTA |
+| `--color-accent-strong` | `#9b7bc9` | hover / pressed state for accent |
+| `--color-accent-ink` | `#15101e` | text on accent backgrounds (buttons, badges) |
+| `--color-success` | `#7ea96b` | rare confirmation states |
+| `--color-danger` | `#c64a3a` | rare destructive confirmations |
 
-Accent is used **only for emphasis** — never as a default button color, never on more than ~3% of pixels in any view.
+### Light (opt-in via `data-theme="light"`)
+
+| Token | Value | Use |
+|---|---|---|
+| `--color-bg` | `#faf8fb` | warm near-white |
+| `--color-bg-elevated` | `#f1eef5` | cards |
+| `--color-ink` | `#1a1620` | primary text |
+| `--color-ink-muted` | `#5a5363` | metadata |
+| `--color-ink-faint` | `#8e8898` | tertiary |
+| `--color-border` | `#d8d1de` | dividers |
+| `--color-accent` | `#6b4ba0` | deeper purple for AA contrast on light |
+| `--color-accent-strong` | `#553a82` | hover / pressed |
+| `--color-accent-ink` | `#fafafa` | text on accent |
+
+The accent is used **only for emphasis** and on no more than ~3% of pixels in any view. The five places it appears: For You row badge, intent-mode pill, focus rings, the single primary CTA per view, the "ask reel" hint when intent-mode is auto-detected. Everywhere else is ink-on-bg typography.
+
+### Contrast (WCAG AA verified)
+
+- ink (`#ece8f0`) on bg (`#0a090c`) → ~17:1
+- ink-muted (`#a89fb3`) on bg → ~9.4:1
+- accent (`#b69ad8`) on bg → ~9.8:1
+- accent-ink (`#15101e`) on accent (`#b69ad8`) → ~9.6:1
+
+All pairs ≥ 4.5:1 (body) or ≥ 3:1 (large). Light-mode pairs designed to the same target; verified by an automated test in spec 07.
 
 ## Typography
 
@@ -90,6 +102,7 @@ Browse rows default to grid; the AI intent search results default to list (so re
 - Audio is **off** by default; clicking the tile mounts a full-bleed player with audio enabled.
 - Trailer mount is gated by `IntersectionObserver` (≥40% visible) to keep off-screen tiles from instantiating players.
 - On exit (mouse leave + 100ms), the player unmounts to free memory.
+- `react-player` v2.x is the player API in v1; v3 (Nov 2025) is breaking and stays on the v1.1 backlog.
 
 ## Search bar — mode switching
 

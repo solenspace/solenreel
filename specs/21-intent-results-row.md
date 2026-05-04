@@ -78,3 +78,18 @@ Render the intent-search Edge Function's results on the Search page, in editoria
 8. The Search page correctly routes between literal and intent modes based on URL params; both → intent wins.
 9. All tests in this spec pass; `test-writer` confirms style.
 10. `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` all green; `fsd-architect` reports zero violations.
+
+## Agents & Skills
+
+**Agents (mandatory invocation):**
+- `fsd-architect` — verifies the IntentResults widget lives in `widgets/intent-results/`, consumes only `entities/` + `features/intent-search` (the hook), never reaches across into other features sideways.
+- `test-writer` — runs at step 5 for both test files. Validates parameterized error-state cases (401/429/502/network) and the partial-flag branching.
+
+**Skills (consulted by the agents during this spec):**
+- **`.claude/skills/vercel-composition-patterns/rules/architecture-compound-components.md`** — `<Tile.Reasoning />` slot override is the canonical compound-component pattern in the project.
+- `.claude/skills/web-design-guidelines/SKILL.md` — error-state voice ("the assistant is offline — try a literal title search."), thinking-indicator typography (mono font), prose-first messaging.
+- `.claude/skills/vercel-react-best-practices/rules/async-suspense-boundaries.md` — informs whether `useIntentSearch().mutate` blocks render or shows the thinking indicator imperatively (this spec stays imperative).
+
+**Notes:**
+- Reasoning line styling uses `--color-ink-muted` (`#a89fb3`); the matte-purple accent does not appear on the reasoning line itself.
+- No `prompt-engineer` here (the prompt itself is in spec 19; this spec only consumes the structured response).

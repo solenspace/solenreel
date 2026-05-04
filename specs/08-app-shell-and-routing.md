@@ -75,9 +75,24 @@ Reorganize the app shell — providers, layout chrome, header, route map — to 
 1. Route map matches the table above; visiting each route renders the expected page; `/movie/:id` renders the placeholder ("Trailer page — landing in spec 13").
 2. Auth-gated routes redirect correctly (signed-out user on `/profile` → `/auth/login`; signed-in user on `/auth/login` → `/`).
 3. Header shows three slots (wordmark, nav, search slot); search slot is empty but reserves space (no layout shift when filled in spec 20).
-4. `NavLink` active state colors the active route in `--color-accent`.
+4. `NavLink` active state colors the active route in `--color-accent` (`#b69ad8` matte purple).
 5. There is exactly one `QueryClient` instance per browser session: `new QueryClient(...)` appears once in `src/app/providers.jsx` and nowhere else (`grep -r "new QueryClient" src/` → 1 hit).
 6. `useAuthSession` is mounted exactly once via `AuthSessionGate`. `grep -r "useAuthSession" src/` shows the mount in `auth-session-gate.jsx` and read-only consumers elsewhere.
 7. All tests in this spec pass; `test-writer` confirms style.
 8. `fsd-architect` reports zero violations: providers and router live in `src/app/`; widgets/header consumes only `entities/user` (for the session-gated profile link), not features.
 9. `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` all green.
+
+## Agents & Skills
+
+**Agents (mandatory invocation):**
+- `fsd-architect` — runs after step 1 (providers tree) and step 4 (router refactor) to validate `app/` layer ownership of routing/providers and the absence of widgets→features sideways imports.
+- `test-writer` — runs at step 10 for the three test files. Validates the redirect tests use the canonical `<MemoryRouter>` wrapper, not real navigation.
+
+**Skills (consulted by the agents during this spec):**
+- `.claude/skills/web-design-guidelines/SKILL.md` — chrome / navigation density, the "single accent per viewport" rule.
+- `.claude/skills/vercel-composition-patterns/rules/architecture-compound-components.md` — informs the providers tree shape (`<AppProviders>` composing children, no prop drilling).
+- `.claude/skills/vercel-react-best-practices/rules/advanced-init-once.md` — drives the single-`QueryClient`-per-session invariant.
+
+**Notes:**
+- No `prompt-engineer` here.
+- `useAuthSession` is mounted exactly once (via `AuthSessionGate`), validated in success criteria 6.

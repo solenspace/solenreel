@@ -36,7 +36,7 @@ Wire the single search bar to operate in two modes — `literal` (TMDB title que
 - **Auto-detect timing**: re-evaluates mode on every keystroke (debounced 200 ms via `useDebounce` from `src/shared/lib/use-debounce.js`). If `userPinned`, do not re-evaluate.
 - **`Tab` toggle**: pressing Tab while focus is in the input flips mode and sets `userPinned: true`. Tab is intercepted (`event.preventDefault()`) only when the input is focused.
 - **Visual feedback**:
-  - Mode indicator is a small pill on the right of the input: `literal` (muted ink) / `intent` (accent burnt-amber background, accent-ink text).
+  - Mode indicator is a small pill on the right of the input: `literal` (muted ink) / `intent` (matte-purple `--color-accent` background, `--color-accent-ink` text).
   - Placeholder swap: `'Search titles'` → `'Tell reel how you feel'` per `ui-context.md`.
   - Border / caret color subtly shift: literal uses `--color-ink-faint` border; intent uses `--color-accent` border. ≤ 1 px width change.
 - **Submit**: pressing Enter submits.
@@ -83,3 +83,19 @@ Wire the single search bar to operate in two modes — `literal` (TMDB title que
 8. The bar reads from + writes to Redux state; URL navigation reflects the submitted state.
 9. All tests pass; `test-writer` confirms style.
 10. `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` all green; `fsd-architect` reports zero violations.
+
+## Agents & Skills
+
+**Agents (mandatory invocation):**
+- `fsd-architect` — verifies the search-bar feature lives in `features/search-bar/`, the slice integrates into `src/app/store.js`, and the heuristic at `src/shared/lib/intent-mode.js` is reachable from any layer.
+- `test-writer` — runs at step 7 for `intent-mode.test.js` (parameterized over 8+ phrases) and `search-bar.test.jsx` (Tab toggle, `/`, `Esc`, Enter routing).
+
+**Skills (consulted by the agents during this spec):**
+- **`.claude/skills/vercel-composition-patterns/rules/state-context-interface.md`** — informs the search-bar-ref-context shape (forwarding the input ref to global keyboard bindings).
+- `.claude/skills/vercel-composition-patterns/rules/state-decouple-implementation.md` — keeps the slice independent of the input element.
+- `.claude/skills/vercel-react-best-practices/rules/advanced-event-handler-refs.md` — Tab interception only when the input is focused.
+- `.claude/skills/web-design-guidelines/SKILL.md` — `/` shortcut convention, mode-indicator placement.
+
+**Notes:**
+- Intent-mode heuristic word list is tentative; revised in this spec's execution after manual smoke if false-positive/negative rate is high. Open question tracked in `progress-tracker.md`.
+- No `prompt-engineer` here (no LLM prompt is changed).

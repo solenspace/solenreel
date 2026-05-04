@@ -15,8 +15,8 @@ Stand up `supabase/functions/intent-search/`, an Edge Function that takes a natu
 ## Design Decisions
 
 - **Endpoint**: `POST /functions/v1/intent-search`. Body: `{ prompt: string, count?: number }`. `count` defaults to 8, clamped to `[5, 10]`.
-- **Auth**: JWT required. Same 401 behavior as spec 17. (Public unauth'd intent search would expose us to free-tier model abuse.)
-- **Provider**: OpenRouter free tier, single model. Model id read from env: `OPENROUTER_MODEL` (e.g. `openai/gpt-oss-20b:free`). **No fallback** — if OpenRouter returns 5xx/429, we return a structured error and the UI shows the offline message.
+- **Auth**: JWT required. Same canonical Supabase pattern as spec 17 — forward `Authorization` header into a `createClient`, then `await supabase.auth.getUser()`; 401 if no user. (Public unauth'd intent search would expose us to free-tier model abuse.)
+- **Provider**: OpenRouter free tier, **locked v1 model: `openai/gpt-oss-20b:free`** — confirmed on the OpenRouter model registry (2026-05-04): $0/M tokens in/out, 131K context window, structured outputs supported. Model id read from env `OPENROUTER_MODEL` so it can be swapped without a code change in the Edge Function. **No fallback** — if OpenRouter returns 5xx/429, we return a structured error and the UI shows the offline message.
 - **Catalog snippet**: a precomputed list of ~200 movies (TMDB top-rated + popular union, deduped). Cached at module load (cold-start of the function); regenerated daily. Format injected into the prompt:
     ```
     id|title|year|genres|tagline
@@ -51,7 +51,7 @@ Stand up `supabase/functions/intent-search/`, an Edge Function that takes a natu
       additionalProperties: false,
     }
     ```
-- **Hallucination guard**: after parsing the response, drop any `item` whose `tmdb_id` is not in the catalog snippet's id set. If the result drops below 5 items, return what we have (don't pad with cold-start), and surface a metadata flag `partial: true` in the response so the UI can show a "limited matches" hint.
+- **Hallucination guard**: after parsing the response, drop any `item` whose `tmdb_id` is not in the catalog snippet's id set. If the result drops below 5 items, return what we have (don't pad with cold-start), and surface a metadata flag `partial: true` in the response so the UI can show a "limited matches" hint. Note: free-tier models on OpenRouter may degrade `strict: true` to best-effort; the hallucination guard + double-validation is the safety net.
 - **Determinism**: `temperature: 0.2`. Higher temperature led to noisier reasoning lines in pilot runs.
 - **Caching**: identical (prompt, count) pair within 5 minutes returns the same result without re-calling OpenRouter. In-process map with TTL; cleared on cold-start. (No cross-invocation cache in v1 — we run on Supabase Edge Functions which spin up cold per invocation; this is just fast-repeat protection within a single warm container.)
 - **Output schema** (function response, distinct from the LLM response):
@@ -118,4 +118,19 @@ Stand up `supabase/functions/intent-search/`, an Edge Function that takes a natu
 7. **No `OPENROUTER_*` reference in `src/`**: `grep -ri "openrouter" src/` returns 0 hits.
 8. The 10-prompt manual test set is checked in to `test-set.md` with annotated results (schema compliance ≥ 90%, hallucination rate ≤ 10%, mood-match ≥ 70% — qualitative thresholds).
 9. All Deno tests pass; `prompt-engineer` agent confirms the prompt and schema are well-formed.
-10. `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` all green; `progress-tracker.md` open question on which exact OpenRouter free model to use is updated with the chosen model and the rationale.
+10. `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` all green.
+
+## Agents & Skills
+
+**Agents (mandatory invocation):**
+- **`prompt-engineer` (mandatory at every step that touches a prompt)** — drives the system prompt in `prompts.ts`, the JSON schema in `schema.ts`, the determinism settings (`temperature: 0.2`), and the 10-prompt regression test set. Owns the file `prompts.ts`; no other agent edits it.
+- `test-writer` — runs at step 6 for the eight Deno test cases (empty prompt, oversize, hallucination 0%/25%/87%, 429, 5xx, schema violation).
+
+**Skills (consulted by the agents during this spec):**
+- **User-level `claude-api`** skill (auto-loaded by the harness when the Claude/Anthropic SDK is in use; here it informs general LLM-integration patterns: prompt caching, structured outputs, defense-in-depth schema validation).
+- `.claude/skills/vercel-react-best-practices/rules/async-cheap-condition-before-await.md` — keeps body validation before any LLM call.
+- `.claude/skills/vercel-react-best-practices/rules/server-cache-lru.md` — informs the per-invocation in-memory cache (5-minute TTL).
+
+**Notes:**
+- This is the **only** spec where the OpenRouter API key is referenced. `OPENROUTER_API_KEY` reaching `src/` is a defect (success criteria 7).
+- v1 model is locked: `openai/gpt-oss-20b:free`. Architecture-decision log in `progress-tracker.md` records this.

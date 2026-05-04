@@ -47,10 +47,23 @@ Land the cold-start home view: one `Row` of TMDB popular movies, rendered throug
 
 1. `/` renders one Row titled `"Popular this week"` with 20 popular movies (TMDB default page size).
 2. Cold-load latency on a typical home connection: home view + first row of tiles paint < 1.5 s warm, < 3 s cold (Lighthouse perf check or manual stopwatch on dev build is acceptable evidence).
-3. Pending state shows a skeleton row; if pending exceeds 800 ms, the skeleton swaps to `"reel is loading"` text in `--color-accent`.
+3. Pending state shows a skeleton row; if pending exceeds 800 ms, the skeleton swaps to `"reel is loading"` text in `--color-accent` (matte purple `#b69ad8`).
 4. Error state shows `ErrorFallback` with `"the movies aren't loading. trying again."` and a single retry button.
 5. Clicking any tile routes to `/movie/<id>` (the spec-08 placeholder).
 6. The Banner / BannerAmbient / legacy MovieRow imports are gone from `Home.jsx` (`grep "Banner\|MovieRow" src/app/pages/Home.jsx` → 0 hits).
 7. Document title on home reads `reel — for you`.
 8. All tests in this spec pass.
 9. `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` all green; `fsd-architect` reports zero violations.
+
+## Agents & Skills
+
+**Agents (mandatory invocation):**
+- `test-writer` — runs at step 5 for the Home page tests. Validates pending/success/error/long-pending branches as parameterized cases.
+
+**Skills (consulted by the agents during this spec):**
+- `.claude/skills/vercel-react-best-practices/rules/async-suspense-boundaries.md` — informs whether to use Suspense or imperative pending-state branching (this spec stays imperative for the long-pending swap).
+- `.claude/skills/vercel-react-best-practices/rules/bundle-defer-third-party.md` — keeps the home page bundle small.
+
+**Notes:**
+- No `fsd-architect` here unless the consumer refactor introduces drift.
+- No `prompt-engineer` here.

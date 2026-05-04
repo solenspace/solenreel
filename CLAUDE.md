@@ -30,3 +30,27 @@ change.
 
 If implementation changes the architecture, scope, or standards documented
 in the context files, update the relevant file **before** continuing.
+
+## Locked-in facts (do not hallucinate around these)
+
+- **Palette is dark by default**, black-dominant canvas (`--color-bg #0a090c`)
+  with a single matte purple accent (`--color-accent #b69ad8`) used on no more
+  than ~3% of pixels. Editorial / material-friendly, **not** futuristic. Light
+  mode is opt-in via `data-theme="light"`.
+- **`react-player` v2.x is intentional in v1.** Version 3 (Nov 2025) is breaking
+  and is on the v1.1 backlog. Do not "helpfully" upgrade.
+- **AI provider is OpenRouter free tier, single model `openai/gpt-oss-20b:free`**
+  (131K context, $0/M tokens, structured outputs supported). No fallback. Key
+  lives only inside Supabase Edge Functions.
+- **Skills live canonically in `.agents/skills/<name>/`**, with symlinks at
+  `.claude/skills/<name>` → `../../.agents/skills/<name>`. Three skills are
+  installed: `vercel-composition-patterns`, `vercel-react-best-practices`,
+  `web-design-guidelines`. `skills-lock.json` is the durable record.
+- **Three project-local agents** at `.claude/agents/`: `fsd-architect`,
+  `test-writer`, `prompt-engineer`. No invented agents — new ones must be
+  validated against an external registry first.
+- **`specs/` contains 23 numbered build specs** (drafted, not executed). They
+  must be executed strictly in order, one at a time, with all five verification
+  gates green before the next begins.
+- **`react-player/youtube`** is the import path used by the trailer player —
+  works in v2.x.

@@ -17,7 +17,18 @@ Stand up `supabase/functions/recommendations/`, an Edge Function that reads a us
 
 - **Runtime**: Deno (Supabase Edge Functions). TypeScript files (`index.ts` + `schema.ts`); we accept TS *here* because the runtime is Deno and the `.ts` files don't ship to the client. Reel's "JS + JSDoc only" rule applies to the `src/` browser bundle, not to Edge Functions.
 - **Endpoint**: `POST /functions/v1/recommendations`. No body; the user is identified by the JWT `Authorization: Bearer <supabase_jwt>` header. Method-restricted: `GET` returns 405.
-- **Auth**: the function reads `auth.uid()` from the JWT. If the JWT is missing or invalid, return 401. Service-role key is **only** used to write the result row to `recommendations` (RLS-bypassing path); reading events uses the user's JWT (RLS-enforcing path).
+- **Auth**: the function derives the user via the canonical Supabase pattern — forward the `Authorization` header to a new `createClient` instance, then call `supabase.auth.getUser()` to obtain `{ user }`:
+    ```ts
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: req.headers.get('Authorization')! } } },
+    );
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (!user || error) return new Response('unauthorized', { status: 401 });
+    const userId = user.id;
+    ```
+  Service-role key is **only** used to write the result row to `recommendations` (RLS-bypassing path); reading events uses the user's JWT (RLS-enforcing path).
 - **Algorithm (content-based, deterministic)**:
   1. Fetch the user's last 50 `events` (any kind) ordered desc by `created_at`. Drop events older than 90 days.
   2. If fewer than 5 events remain → cold-start path: return TMDB popular list (top 20) with `score = popularity / max(popularity)` and `reason = null`. Skip step 3+.
@@ -88,3 +99,17 @@ Stand up `supabase/functions/recommendations/`, an Edge Function that reads a us
 8. The `useRecommendations` smoke hook fires against the function via `supabase.functions.invoke` and surfaces the result through TanStack Query.
 9. All Deno tests for the function pass (env-gated).
 10. `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` all green; the function's `.ts` files do not leak into the client bundle (verifiable: `grep -ri "recommendations.*Edge" dist/` finds nothing).
+
+## Agents & Skills
+
+**Agents (mandatory invocation):**
+- `test-writer` — runs at step 4 for the Deno test suite. Validates cold-start, warm-start, auth-failure, schema-validation, and idempotency cases.
+
+**Skills (consulted by the agents during this spec):**
+- `.claude/skills/vercel-react-best-practices/rules/async-parallel.md` — informs `Promise.all`-batched TMDB fetches (top 5 details + similar).
+- `.claude/skills/vercel-react-best-practices/rules/async-cheap-condition-before-await.md` — keeps the cold-start check before any expensive TMDB call.
+- `.claude/skills/vercel-react-best-practices/rules/server-cache-lru.md` — informs the per-invocation in-memory cache.
+
+**Notes:**
+- `prompt-engineer` is **not** invoked here even though the plan referenced it: this function does not call an LLM. The JSON-schema discipline is symmetric with spec 19 but the prompt-engineer agent's domain is LLM prompts, which this spec lacks.
+- `fsd-architect` does not gate Edge Functions (different layer model); architecture review for this spec is the schema-validation discipline + the auth-pattern correctness.
