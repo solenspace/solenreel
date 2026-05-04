@@ -16,15 +16,15 @@ Reorganize the app shell — providers, layout chrome, header, route map — to 
 ## Design Decisions
 
 - **Single providers tree** at `src/app/providers.jsx`:
-    ```
-    <ReduxProvider>
-      <QueryClientProvider>
-        <AuthSessionGate>
-          {children}
-        </AuthSessionGate>
-      </QueryClientProvider>
-    </ReduxProvider>
-    ```
+  ```
+  <ReduxProvider>
+    <QueryClientProvider>
+      <AuthSessionGate>
+        {children}
+      </AuthSessionGate>
+    </QueryClientProvider>
+  </ReduxProvider>
+  ```
   `AuthSessionGate` mounts `useAuthSession` once and renders nothing extra; it's the canonical "subscribe to Supabase auth" boundary.
 - **`QueryClient` config**: `staleTime: 5 * 60_000` (catalogue data), `retry: 1`, `refetchOnWindowFocus: false` (carry-over from netflix-clone). Single client per browser session.
 - **Routes** (post-spec-08):
@@ -85,14 +85,17 @@ Reorganize the app shell — providers, layout chrome, header, route map — to 
 ## Agents & Skills
 
 **Agents (mandatory invocation):**
+
 - `fsd-architect` — runs after step 1 (providers tree) and step 4 (router refactor) to validate `app/` layer ownership of routing/providers and the absence of widgets→features sideways imports.
 - `test-writer` — runs at step 10 for the three test files. Validates the redirect tests use the canonical `<MemoryRouter>` wrapper, not real navigation.
 
 **Skills (consulted by the agents during this spec):**
+
 - `.claude/skills/web-design-guidelines/SKILL.md` — chrome / navigation density, the "single accent per viewport" rule.
 - `.claude/skills/vercel-composition-patterns/rules/architecture-compound-components.md` — informs the providers tree shape (`<AppProviders>` composing children, no prop drilling).
 - `.claude/skills/vercel-react-best-practices/rules/advanced-init-once.md` — drives the single-`QueryClient`-per-session invariant.
 
 **Notes:**
+
 - No `prompt-engineer` here.
 - `useAuthSession` is mounted exactly once (via `AuthSessionGate`), validated in success criteria 6.

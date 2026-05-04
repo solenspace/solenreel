@@ -14,7 +14,7 @@ Make tiles autoplay their muted trailers on hover/focus instead of staying stati
 
 ## Design Decisions
 
-- **Where the player lives**: not inside the tile by default. The tile composes `<Tile.HoverPlayer />` as an *opt-in* slot. Pages that want hover trailers (home popular row, for-you row, intent results row) pass `hoverPlayer` prop. Pages that don't (search-text-results list, profile) get static posters.
+- **Where the player lives**: not inside the tile by default. The tile composes `<Tile.HoverPlayer />` as an _opt-in_ slot. Pages that want hover trailers (home popular row, for-you row, intent results row) pass `hoverPlayer` prop. Pages that don't (search-text-results list, profile) get static posters.
 - **`useTrailerOnHover(movieId)`** hook at `src/features/trailer/use-trailer-on-hover.js`:
   - Returns `{ ref, state }` where `ref` is a ref to attach to the tile root, and `state` is `'idle' | 'pending' | 'playing' | 'unsupported'`.
   - Internals: `IntersectionObserver` to gate mount (≥40% visible), hover/focus listener with 250 ms timer, fetches video keys via `useMovieVideos` (only when entered, not at module load), picks the first YouTube `Trailer` type key, mounts a `<TrailerPlayer />` overlay.
@@ -64,10 +64,12 @@ Make tiles autoplay their muted trailers on hover/focus instead of staying stati
 ## Agents & Skills
 
 **Agents (mandatory invocation):**
+
 - `fsd-architect` — verifies `useTrailerOnHover` and `hover-store` live in `features/trailer/`, while `Tile.HoverPlayer` slot integration into `entities/movie/tile.jsx` follows the slot/composition pattern (entity stays presentational; the hook is what owns the side effect).
 - `test-writer` — runs at step 7 for the hook tests. Validates fake-timer-driven 250 ms / 100 ms assertions, IO-stub-driven gating, the matchMedia flip for prefers-reduced-motion.
 
 **Skills (consulted by the agents during this spec):**
+
 - **`.claude/skills/vercel-react-best-practices/rules/advanced-event-handler-refs.md`** — drives the ref-attached hover handler pattern.
 - `.claude/skills/vercel-react-best-practices/rules/advanced-effect-event-deps.md` — keeps the IO observer effect's deps array honest.
 - `.claude/skills/vercel-react-best-practices/rules/client-passive-event-listeners.md` — informs whether the hover listeners need `passive: true`.
@@ -75,5 +77,6 @@ Make tiles autoplay their muted trailers on hover/focus instead of staying stati
 - `.claude/skills/vercel-composition-patterns/rules/state-decouple-implementation.md` — informs the `hover-store` slice design (one source of truth for "currently hovering tile").
 
 **Notes:**
+
 - `react-player` v2.x is the locked v1 player API; v3 (Nov 2025, breaking) is v1.1 backlog. Tests rely on the spec-03 stub.
 - No `prompt-engineer` here.

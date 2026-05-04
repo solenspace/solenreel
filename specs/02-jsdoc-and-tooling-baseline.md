@@ -39,27 +39,27 @@ Make the JS-with-JSDoc discipline documented in `code-standards.md` mechanically
    - `prettier`
    - `prettier-plugin-tailwindcss`
 2. Create `tsconfig.json` at repo root:
-    ```json
-    {
-      "compilerOptions": {
-        "target": "ES2022",
-        "module": "ESNext",
-        "moduleResolution": "Bundler",
-        "jsx": "preserve",
-        "allowJs": true,
-        "checkJs": true,
-        "strict": true,
-        "noEmit": true,
-        "esModuleInterop": true,
-        "skipLibCheck": true,
-        "isolatedModules": true,
-        "resolveJsonModule": true,
-        "baseUrl": ".",
-        "paths": { "@/*": ["src/*"] }
-      },
-      "include": ["src/**/*", "vite.config.js"]
-    }
-    ```
+   ```json
+   {
+     "compilerOptions": {
+       "target": "ES2022",
+       "module": "ESNext",
+       "moduleResolution": "Bundler",
+       "jsx": "preserve",
+       "allowJs": true,
+       "checkJs": true,
+       "strict": true,
+       "noEmit": true,
+       "esModuleInterop": true,
+       "skipLibCheck": true,
+       "isolatedModules": true,
+       "resolveJsonModule": true,
+       "baseUrl": ".",
+       "paths": { "@/*": ["src/*"] }
+     },
+     "include": ["src/**/*", "vite.config.js"]
+   }
+   ```
 3. Add `// @ts-check` as the first line of every existing file under `src/` (post-spec-01 paths). Mechanical pass; no semantic changes.
 4. Author/extend `eslint.config.js`:
    - Plugins: `import`, `jsdoc`, `react-hooks` (strict).
@@ -67,14 +67,14 @@ Make the JS-with-JSDoc discipline documented in `code-standards.md` mechanically
    - `jsdoc/require-param`, `jsdoc/require-returns` on exported functions only (skip arrow callbacks, hooks, components — TypeScript-checking handles those).
    - Pattern rule: every file under `src/**/*.{js,jsx}` must contain `@ts-check` in the first 3 lines.
 5. Create `.prettierrc.json`:
-    ```json
-    {
-      "singleQuote": true,
-      "trailingComma": "all",
-      "printWidth": 100,
-      "plugins": ["prettier-plugin-tailwindcss"]
-    }
-    ```
+   ```json
+   {
+     "singleQuote": true,
+     "trailingComma": "all",
+     "printWidth": 100,
+     "plugins": ["prettier-plugin-tailwindcss"]
+   }
+   ```
 6. Create `.prettierignore` covering `node_modules`, `dist`, `.claude/`, `.agents/`, `pnpm-lock.yaml`, `package-lock.json`.
 7. Add the four scripts to `package.json` (`typecheck`, `lint`, `lint:fix`, `format`, `format:check`).
 8. Run all gates locally; fix every failure under spec 02 (no skipping, no suppressions). The volume of fixes is expected: imports, missing JSDoc on exports, Tailwind class ordering.
@@ -94,12 +94,15 @@ Make the JS-with-JSDoc discipline documented in `code-standards.md` mechanically
 ## Agents & Skills
 
 **Agents (mandatory invocation):**
+
 - `fsd-architect` — validates that the `import/no-restricted-paths` zone definitions correctly encode the FSD upward-only direction across all five layers. Run after step 4 (eslint.config.js authoring) and re-run after step 8 (full lint pass).
 
 **Skills (consulted by the agents during this spec):**
+
 - `.claude/skills/vercel-react-best-practices/rules/bundle-barrel-imports.md` — informs the "no barrel files" lint rule the FSD architect enforces.
 - `.claude/skills/vercel-composition-patterns/rules/architecture-avoid-boolean-props.md` — referenced indirectly through the JSDoc requirement for documenting prop shapes.
 
 **Notes:**
+
 - No `test-writer` here: tests authored in spec 03.
 - No `prompt-engineer` here.

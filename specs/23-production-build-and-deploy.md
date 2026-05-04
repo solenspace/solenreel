@@ -29,7 +29,7 @@ Ship reel. After this spec, the app is built for production with env-var validat
   - Sign in via `browser_type` (creds from env: `SMOKE_TEST_EMAIL` / `SMOKE_TEST_PASSWORD`) → `browser_snapshot` confirms the For You row badge.
   - `browser_type` an intent prompt → submit → `browser_snapshot` confirms at least 1 reasoning line.
   - Each step has a 10 s timeout enforced by the MCP. Whole flow ≤ 60 s.
-- **`@playwright/test` is NOT a devDep.** Playwright runs *inside* the MCP server process; the project bundle never imports it. This is why the MCP-driven approach is preferred: zero added dependency surface in `package.json`.
+- **`@playwright/test` is NOT a devDep.** Playwright runs _inside_ the MCP server process; the project bundle never imports it. This is why the MCP-driven approach is preferred: zero added dependency surface in `package.json`.
 - **README**: a fresh `README.md` for reel — what it is, who it's for, how to run, attribution (TMDB + Supabase + OpenRouter + originating netflix-clone reference + `vercel-labs/agent-skills` for skills), license note. The `NETFLIX-CLONE-README.md` file was already deleted in the pre-execution cleanup pass; attribution lives here in reel's new README.
 - **Domain / branding**: out of scope; reel deploys to the default `*.vercel.app` URL in v1. Custom domain is a v1.1 task.
 - **Final cleanup pass**:
@@ -45,14 +45,14 @@ Ship reel. After this spec, the app is built for production with env-var validat
    - Add `build.sourcemap: false` for production; `esbuild.drop: ['console', 'debugger']` for prod.
    - Verify `manualChunks` no longer references firebase (spec 05).
 2. Create `vercel.json` at repo root:
-    ```json
-    {
-      "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
-      "buildCommand": "pnpm build",
-      "outputDirectory": "dist",
-      "framework": null
-    }
-    ```
+   ```json
+   {
+     "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+     "buildCommand": "pnpm build",
+     "outputDirectory": "dist",
+     "framework": null
+   }
+   ```
    And a documented Netlify fallback (`netlify.toml`).
 3. Create `.github/workflows/ci.yml` running typecheck/lint/test/build on push.
 4. Author `README.md` for reel (replacing the netflix-clone's). Sections: what it is, run-locally (`pnpm install`, `pnpm dev`, env setup pointer), tech stack summary, deploy notes, license.
@@ -83,20 +83,24 @@ Ship reel. After this spec, the app is built for production with env-var validat
 ## Agents & Skills
 
 **Agents (mandatory invocation):**
+
 - `fsd-architect` — final tree audit at step 8. Pass = zero layer-direction violations, single-Supabase-client invariant intact, single-TMDB-client invariant intact, no OpenRouter reference in `src/`.
 - `test-writer` — drives the Playwright smoke spec (step 5). Validates the 5-step end-to-end flow uses behavior-based selectors (no implementation coupling).
 
 **Skills (consulted by the agents during this spec):**
+
 - **`.claude/skills/playwright-best-practices/SKILL.md`** — drives the agent's use of Playwright MCP correctly: locator-strategy hierarchy (role > label > text > test-id), accessibility snapshots over screenshots, no implementation coupling. Mandatory read for the smoke step.
 - **`.claude/skills/supabase/SKILL.md`** — final deploy: `supabase functions deploy` for both Edge Functions; `supabase secrets list` to confirm prod secrets.
 - `.claude/skills/vercel-react-best-practices/rules/bundle-defer-third-party.md` — bundle-size targets.
 - `.claude/skills/vercel-react-best-practices/rules/bundle-barrel-imports.md` — final pass to ensure no barrel imports leaked in.
 
 **MCPs available during this spec:**
+
 - **Playwright MCP** — drives the entire smoke pass (`browser_navigate`, `browser_click`, `browser_type`, `browser_snapshot`, `browser_hover`).
 - **Supabase MCP** — `deploy_edge_function` for both functions, `list_edge_functions` to confirm deploys, `get_logs` for any deploy-time error triage.
 
 **Notes:**
+
 - v1 model `openai/gpt-oss-20b:free` set in `OPENROUTER_MODEL` Supabase secret.
 - No `prompt-engineer` here (no prompt change in this spec).
 - `@playwright/test` is intentionally NOT in `package.json`; the smoke runs through the MCP, not through a written test suite.

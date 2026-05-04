@@ -58,12 +58,15 @@ Land the cold-start home view: one `Row` of TMDB popular movies, rendered throug
 ## Agents & Skills
 
 **Agents (mandatory invocation):**
+
 - `test-writer` — runs at step 5 for the Home page tests. Validates pending/success/error/long-pending branches as parameterized cases.
 
 **Skills (consulted by the agents during this spec):**
+
 - `.claude/skills/vercel-react-best-practices/rules/async-suspense-boundaries.md` — informs whether to use Suspense or imperative pending-state branching (this spec stays imperative for the long-pending swap).
 - `.claude/skills/vercel-react-best-practices/rules/bundle-defer-third-party.md` — keeps the home page bundle small.
 
 **Notes:**
+
 - No `fsd-architect` here unless the consumer refactor introduces drift.
 - No `prompt-engineer` here.

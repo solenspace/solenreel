@@ -64,16 +64,20 @@ Stand up the Supabase project that reel uses for auth, data, and Edge Functions.
 ## Agents & Skills
 
 **Agents (mandatory invocation):**
+
 - `fsd-architect` — verifies the single-Supabase-client invariant after step 7 (client created) and step 10 (lint rule encoded). Reads its source-of-truth context from `architecture.md` §"Invariants" 9.
 
 **Skills (consulted by the agents during this spec):**
+
 - **`.claude/skills/supabase/SKILL.md`** — authoritative source for `createClient` init, env wiring, auth-state subscription, and the singleton-client pattern. Load-bearing for this spec.
 - **`.claude/skills/supabase-postgres-best-practices/SKILL.md`** — referenced for migration-folder conventions even though no migration is authored here yet.
 - `.claude/skills/vercel-react-best-practices/rules/bundle-defer-third-party.md` — informs how the Supabase client is imported lazily where useful.
 
 **MCPs available during this spec:**
+
 - **Supabase MCP** (`https://mcp.supabase.com/mcp`) — Claude can run `list_projects`, inspect linkage state, and verify the project is reachable without leaving the IDE.
 
 **Notes:**
+
 - No `test-writer` invocation beyond the simple smoke test in step 9; the spec does not author behavioral tests.
 - Edge Function secrets (`SUPABASE_SERVICE_ROLE_KEY`, `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`) are set via `pnpx supabase secrets set --env-file .env.functions`; the file is gitignored. Spec 19 verifies the keys are unreachable from the browser bundle.

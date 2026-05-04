@@ -1,3 +1,4 @@
+// @ts-check
 import { createBrowserRouter } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import AppLayout from '@/app/layouts/app-layout';
@@ -10,6 +11,7 @@ const Profile = lazy(() => import('@/app/pages/profile'));
 const Login = lazy(() => import('@/app/pages/login'));
 const Welcome = lazy(() => import('@/app/pages/welcome'));
 
+/** @param {React.ComponentType} Component */
 const withSuspense = (Component) => (
   <Suspense fallback={<LoadingScreen />}>
     <Component />

@@ -10,35 +10,35 @@ Dark-by-default with a black-dominant canvas (≥ 95% of pixel area in any view 
 
 ### Dark (default) — matte purple accent on near-black
 
-| Token | Value | Use |
-|---|---|---|
-| `--color-bg` | `#0a090c` | page background — near-black with hint of warm violet |
-| `--color-bg-elevated` | `#14121a` | cards, hovered tile state |
-| `--color-bg-overlay` | `#08070bcc` | trailer overlay, modal scrim |
-| `--color-ink` | `#ece8f0` | primary text |
-| `--color-ink-muted` | `#a89fb3` | metadata, secondary text |
-| `--color-ink-faint` | `#6b6377` | tertiary text, placeholders |
-| `--color-border` | `#27232e` | dividers, tile borders |
-| `--color-border-subtle` | `#1a161f` | row separators |
-| `--color-accent` | `#b69ad8` | matte lavender — For You badge, intent-mode indicator, focus rings, primary CTA |
-| `--color-accent-strong` | `#9b7bc9` | hover / pressed state for accent |
-| `--color-accent-ink` | `#15101e` | text on accent backgrounds (buttons, badges) |
-| `--color-success` | `#7ea96b` | rare confirmation states |
-| `--color-danger` | `#c64a3a` | rare destructive confirmations |
+| Token                   | Value       | Use                                                                             |
+| ----------------------- | ----------- | ------------------------------------------------------------------------------- |
+| `--color-bg`            | `#0a090c`   | page background — near-black with hint of warm violet                           |
+| `--color-bg-elevated`   | `#14121a`   | cards, hovered tile state                                                       |
+| `--color-bg-overlay`    | `#08070bcc` | trailer overlay, modal scrim                                                    |
+| `--color-ink`           | `#ece8f0`   | primary text                                                                    |
+| `--color-ink-muted`     | `#a89fb3`   | metadata, secondary text                                                        |
+| `--color-ink-faint`     | `#6b6377`   | tertiary text, placeholders                                                     |
+| `--color-border`        | `#27232e`   | dividers, tile borders                                                          |
+| `--color-border-subtle` | `#1a161f`   | row separators                                                                  |
+| `--color-accent`        | `#b69ad8`   | matte lavender — For You badge, intent-mode indicator, focus rings, primary CTA |
+| `--color-accent-strong` | `#9b7bc9`   | hover / pressed state for accent                                                |
+| `--color-accent-ink`    | `#15101e`   | text on accent backgrounds (buttons, badges)                                    |
+| `--color-success`       | `#7ea96b`   | rare confirmation states                                                        |
+| `--color-danger`        | `#c64a3a`   | rare destructive confirmations                                                  |
 
 ### Light (opt-in via `data-theme="light"`)
 
-| Token | Value | Use |
-|---|---|---|
-| `--color-bg` | `#faf8fb` | warm near-white |
-| `--color-bg-elevated` | `#f1eef5` | cards |
-| `--color-ink` | `#1a1620` | primary text |
-| `--color-ink-muted` | `#5a5363` | metadata |
-| `--color-ink-faint` | `#8e8898` | tertiary |
-| `--color-border` | `#d8d1de` | dividers |
-| `--color-accent` | `#6b4ba0` | deeper purple for AA contrast on light |
-| `--color-accent-strong` | `#553a82` | hover / pressed |
-| `--color-accent-ink` | `#fafafa` | text on accent |
+| Token                   | Value     | Use                                    |
+| ----------------------- | --------- | -------------------------------------- |
+| `--color-bg`            | `#faf8fb` | warm near-white                        |
+| `--color-bg-elevated`   | `#f1eef5` | cards                                  |
+| `--color-ink`           | `#1a1620` | primary text                           |
+| `--color-ink-muted`     | `#5a5363` | metadata                               |
+| `--color-ink-faint`     | `#8e8898` | tertiary                               |
+| `--color-border`        | `#d8d1de` | dividers                               |
+| `--color-accent`        | `#6b4ba0` | deeper purple for AA contrast on light |
+| `--color-accent-strong` | `#553a82` | hover / pressed                        |
+| `--color-accent-ink`    | `#fafafa` | text on accent                         |
 
 The accent is used **only for emphasis** and on no more than ~3% of pixels in any view. The five places it appears: For You row badge, intent-mode pill, focus rings, the single primary CTA per view, the "ask reel" hint when intent-mode is auto-detected. Everywhere else is ink-on-bg typography.
 
@@ -53,11 +53,11 @@ All pairs ≥ 4.5:1 (body) or ≥ 3:1 (large). Light-mode pairs designed to the 
 
 ## Typography
 
-| Role | Family | Weight | Notes |
-|---|---|---|---|
-| Display (movie titles, hero) | `Newsreader` (variable serif) | 500–600 | optical size on large headlines |
-| Body (metadata, prose, AI reasoning) | `Inter` (variable sans) | 400–500 | tabular numerics on by default |
-| Mono (debug, raw ids) | `JetBrains Mono` | 400 | only in dev affordances |
+| Role                                 | Family                        | Weight  | Notes                           |
+| ------------------------------------ | ----------------------------- | ------- | ------------------------------- |
+| Display (movie titles, hero)         | `Newsreader` (variable serif) | 500–600 | optical size on large headlines |
+| Body (metadata, prose, AI reasoning) | `Inter` (variable sans)       | 400–500 | tabular numerics on by default  |
+| Mono (debug, raw ids)                | `JetBrains Mono`              | 400     | only in dev affordances         |
 
 Line height: 1.4 for body, 1.1 for display. Letter spacing: −0.01em on display, default on body.
 

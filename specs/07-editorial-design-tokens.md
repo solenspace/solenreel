@@ -2,7 +2,7 @@
 
 ## Goal
 
-Replace the placeholder grayscale palette (set in spec 01) with reel's real editorial palette per `ui-context.md`: **black-dominant canvas with a single matte-purple accent** (`--color-bg #0a090c`, `--color-accent #b69ad8`), ink/ink-muted/ink-faint text. Wire up the editorial typography stack (`Newsreader` serif for display, `Inter` sans for body, `JetBrains Mono` for dev affordances). Dark is the default; light is opt-in via `data-theme="light"` using Tailwind v4's `@custom-variant` mechanism. After this spec, the app *looks* like reel even though tile/row primitives, trailer behavior, and feature surfaces are still pre-reel structures.
+Replace the placeholder grayscale palette (set in spec 01) with reel's real editorial palette per `ui-context.md`: **black-dominant canvas with a single matte-purple accent** (`--color-bg #0a090c`, `--color-accent #b69ad8`), ink/ink-muted/ink-faint text. Wire up the editorial typography stack (`Newsreader` serif for display, `Inter` sans for body, `JetBrains Mono` for dev affordances). Dark is the default; light is opt-in via `data-theme="light"` using Tailwind v4's `@custom-variant` mechanism. After this spec, the app _looks_ like reel even though tile/row primitives, trailer behavior, and feature surfaces are still pre-reel structures.
 
 ## Dependencies
 
@@ -15,44 +15,46 @@ Replace the placeholder grayscale palette (set in spec 01) with reel's real edit
 
 - **Tailwind v4 `@theme` block** is the single source of truth for color and font tokens. CSS variables are emitted from there and used directly via Tailwind utilities (`bg-bg`, `text-ink`, `text-ink-muted`, `bg-accent`, etc.).
 - **Token names mirror `ui-context.md` exactly** (no renames). Dark palette is the default `@theme` block:
-    ```css
-    @import "tailwindcss";
-    @custom-variant light (&:where([data-theme=light], [data-theme=light] *));
 
-    @theme {
-      --color-bg: #0a090c;
-      --color-bg-elevated: #14121a;
-      --color-bg-overlay: #08070bcc;
-      --color-ink: #ece8f0;
-      --color-ink-muted: #a89fb3;
-      --color-ink-faint: #6b6377;
-      --color-border: #27232e;
-      --color-border-subtle: #1a161f;
-      --color-accent: #b69ad8;
-      --color-accent-strong: #9b7bc9;
-      --color-accent-ink: #15101e;
-      --color-success: #7ea96b;
-      --color-danger: #c64a3a;
+  ```css
+  @import 'tailwindcss';
+  @custom-variant light (&:where([data-theme=light], [data-theme=light] *));
 
-      --font-display: 'Newsreader', ui-serif, Georgia, serif;
-      --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
-    }
-    ```
+  @theme {
+    --color-bg: #0a090c;
+    --color-bg-elevated: #14121a;
+    --color-bg-overlay: #08070bcc;
+    --color-ink: #ece8f0;
+    --color-ink-muted: #a89fb3;
+    --color-ink-faint: #6b6377;
+    --color-border: #27232e;
+    --color-border-subtle: #1a161f;
+    --color-accent: #b69ad8;
+    --color-accent-strong: #9b7bc9;
+    --color-accent-ink: #15101e;
+    --color-success: #7ea96b;
+    --color-danger: #c64a3a;
+
+    --font-display: 'Newsreader', ui-serif, Georgia, serif;
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  }
+  ```
+
 - **Light mode** is opt-in via `data-theme="light"` on `<html>`. Implemented via Tailwind v4's `@custom-variant light` (declared above) so utilities like `light:bg-bg-light` work. The light-palette token values are overridden in a `[data-theme=light]` selector block following the `@theme` declaration:
-    ```css
-    [data-theme=light] {
-      --color-bg: #faf8fb;
-      --color-bg-elevated: #f1eef5;
-      --color-ink: #1a1620;
-      --color-ink-muted: #5a5363;
-      --color-ink-faint: #8e8898;
-      --color-border: #d8d1de;
-      --color-accent: #6b4ba0;
-      --color-accent-strong: #553a82;
-      --color-accent-ink: #fafafa;
-    }
-    ```
+  ```css
+  [data-theme='light'] {
+    --color-bg: #faf8fb;
+    --color-bg-elevated: #f1eef5;
+    --color-ink: #1a1620;
+    --color-ink-muted: #5a5363;
+    --color-ink-faint: #8e8898;
+    --color-border: #d8d1de;
+    --color-accent: #6b4ba0;
+    --color-accent-strong: #553a82;
+    --color-accent-ink: #fafafa;
+  }
+  ```
   No `prefers-color-scheme` auto-switch in v1; the user opts in by toggling `data-theme`.
 - **Font hosting**: `@fontsource/newsreader`, `@fontsource/inter`, `@fontsource/jetbrains-mono` packages — self-hosted, no external CDN. Imported once in `src/main.jsx`. Licensed OFL/SIL, free to bundle.
 - **Variable fonts**: `Newsreader` and `Inter` are variable; subset to `latin` to keep bundle size down. Weights used: 400, 500, 600 for both.
@@ -67,11 +69,11 @@ Replace the placeholder grayscale palette (set in spec 01) with reel's real edit
    - `@fontsource-variable/inter`
    - `@fontsource/jetbrains-mono`
 2. In `src/main.jsx`, import the font CSS:
-    ```js
-    import '@fontsource-variable/newsreader/index.css';
-    import '@fontsource-variable/inter/index.css';
-    import '@fontsource/jetbrains-mono/400.css';
-    ```
+   ```js
+   import '@fontsource-variable/newsreader/index.css';
+   import '@fontsource-variable/inter/index.css';
+   import '@fontsource/jetbrains-mono/400.css';
+   ```
 3. Replace the placeholder `@theme` block in `src/main.css` with the real token block (above), plus light-mode override block.
 4. Add `@layer base` rules to `src/main.css`:
    - `html { background: var(--color-bg); color: var(--color-ink); font-family: var(--font-sans); font-feature-settings: 'tnum'; }`
@@ -99,12 +101,15 @@ Replace the placeholder grayscale palette (set in spec 01) with reel's real edit
 ## Agents & Skills
 
 **Agents (mandatory invocation):**
+
 - `fsd-architect` — verifies tokens are consumed via Tailwind utilities (`bg-bg`, `text-ink`, `bg-accent`, etc.) rather than inline `style={{ color: '#b69ad8' }}` literals scattered across components. Run after step 5 (consumer validation).
 
 **Skills (consulted by the agents during this spec):**
+
 - `.claude/skills/web-design-guidelines/SKILL.md` — drives the editorial / material-friendly vocabulary, contrast targets (WCAG AA), and the "≤ 3% accent pixels" discipline.
 - `.claude/skills/vercel-react-best-practices/rules/bundle-defer-third-party.md` — informs the font-loading strategy (variable fonts subset to `latin`, no FOUT mitigation hack).
 
 **Notes:**
+
 - No `test-writer` here for behavioral tests; the css test in step 7 is a structural assertion authored manually.
 - Palette is matte-purple-on-black (`--color-bg #0a090c`, `--color-accent #b69ad8`); no burnt-amber survives anywhere in the codebase post-this-spec.

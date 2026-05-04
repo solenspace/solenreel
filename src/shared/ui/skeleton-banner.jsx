@@ -1,14 +1,15 @@
+// @ts-check
 const SkeletonBanner = () => {
   return (
-    <div className="relative w-full h-[80vh] bg-bg-elevated animate-pulse">
-      <div className="absolute bottom-20 left-4 md:left-12 space-y-4">
-        <div className="h-8 w-64 bg-bg-elevated rounded" />
-        <div className="h-12 w-96 bg-bg-elevated rounded" />
-        <div className="h-4 w-[500px] max-w-[80vw] bg-bg-elevated rounded" />
-        <div className="h-4 w-[400px] max-w-[70vw] bg-bg-elevated rounded" />
-        <div className="flex gap-3 mt-4">
-          <div className="h-12 w-32 bg-bg-elevated rounded" />
-          <div className="h-12 w-40 bg-bg-elevated rounded" />
+    <div className="bg-bg-elevated relative h-[80vh] w-full animate-pulse">
+      <div className="absolute bottom-20 left-4 space-y-4 md:left-12">
+        <div className="bg-bg-elevated h-8 w-64 rounded" />
+        <div className="bg-bg-elevated h-12 w-96 rounded" />
+        <div className="bg-bg-elevated h-4 w-[500px] max-w-[80vw] rounded" />
+        <div className="bg-bg-elevated h-4 w-[400px] max-w-[70vw] rounded" />
+        <div className="mt-4 flex gap-3">
+          <div className="bg-bg-elevated h-12 w-32 rounded" />
+          <div className="bg-bg-elevated h-12 w-40 rounded" />
         </div>
       </div>
     </div>

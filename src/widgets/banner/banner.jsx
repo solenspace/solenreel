@@ -1,3 +1,4 @@
+// @ts-check
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { img } from '@/shared/api/tmdb';
@@ -7,8 +8,18 @@ import Button from '@/shared/ui/button';
 import SkeletonBanner from '@/shared/ui/skeleton-banner';
 import { PlayIcon, InformationIcon } from '@/shared/ui/icons';
 
+/** @typedef {import('@/shared/api/tmdb').Movie} Movie */
+
+/**
+ * @param {string | null | undefined} str
+ * @param {number} n
+ * @returns {string | null | undefined}
+ */
 const truncate = (str, n) => (str && str.length > n ? str.substring(0, n - 1) + '...' : str);
 
+/**
+ * @param {{ movie: Movie | null | undefined, onMoreInfo?: (movie: Movie) => void }} props
+ */
 const Banner = ({ movie, onMoreInfo }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showTrailer, setShowTrailer] = useState(false);
@@ -17,8 +28,11 @@ const Banner = ({ movie, onMoreInfo }) => {
   const { data: images } = useMovieImages(movie?.id);
   const { data: videos } = useMovieVideos(movie?.id);
 
-  const trailerKey = videos?.find(v => v.type === 'Trailer' && v.site === 'YouTube')?.key
-    || videos?.[0]?.key;
+  const trailerKey =
+    videos?.find(
+      /** @param {Movie} v */
+      (v) => v.type === 'Trailer' && v.site === 'YouTube',
+    )?.key || videos?.[0]?.key;
 
   const logoPath = images?.logos?.[0]?.file_path;
   const backdropUrl = img.backdrop(movie?.backdrop_path);
@@ -44,7 +58,7 @@ const Banner = ({ movie, onMoreInfo }) => {
   if (!movie) return <SkeletonBanner />;
 
   return (
-    <div className="relative w-full h-[85vh] overflow-hidden">
+    <div className="relative h-[85vh] w-full overflow-hidden">
       {/* Backdrop image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000"
@@ -66,21 +80,21 @@ const Banner = ({ movie, onMoreInfo }) => {
               playing={isPlaying}
               muted={isMuted}
               onEnded={handleTrailerEnd}
-              className="w-full h-full"
+              className="h-full w-full"
             />
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Gradients */}
-      <div className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-black/40" />
-      <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-bg to-transparent" />
+      <div className="from-bg absolute inset-0 bg-gradient-to-t via-transparent to-black/40" />
+      <div className="from-bg absolute right-0 bottom-0 left-0 h-40 bg-gradient-to-t to-transparent" />
 
       {/* Content */}
-      <div className="absolute bottom-28 left-4 md:left-12 z-10 max-w-xl space-y-4">
+      <div className="absolute bottom-28 left-4 z-10 max-w-xl space-y-4 md:left-12">
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-accent font-bold text-lg">N</span>
-          <span className="uppercase tracking-widest text-xs text-gray-300 font-semibold">
+          <span className="text-accent text-lg font-bold">N</span>
+          <span className="text-xs font-semibold tracking-widest text-gray-300 uppercase">
             {movie.media_type === 'tv' ? 'S E R I E S' : 'M O V I E'}
           </span>
         </div>
@@ -91,13 +105,13 @@ const Banner = ({ movie, onMoreInfo }) => {
             animate={{ opacity: 1, y: 0 }}
             src={img.logo(logoPath)}
             alt={movie.title || movie.name}
-            className="max-w-[350px] w-auto max-h-[120px] object-contain drop-shadow-2xl"
+            className="max-h-[120px] w-auto max-w-[350px] object-contain drop-shadow-2xl"
           />
         ) : (
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-6xl font-bold text-white drop-shadow-lg"
+            className="text-4xl font-bold text-white drop-shadow-lg md:text-6xl"
           >
             {movie.title || movie.name}
           </motion.h1>
@@ -107,7 +121,7 @@ const Banner = ({ movie, onMoreInfo }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="text-sm md:text-base text-gray-200 line-clamp-3 max-w-lg drop-shadow-md"
+          className="line-clamp-3 max-w-lg text-sm text-gray-200 drop-shadow-md md:text-base"
         >
           {truncate(movie.overview || '', 200)}
         </motion.p>
@@ -129,11 +143,7 @@ const Banner = ({ movie, onMoreInfo }) => {
           >
             <PlayIcon /> Play
           </Button>
-          <Button
-            variant="secondary"
-            size="lg"
-            onClick={() => onMoreInfo?.(movie)}
-          >
+          <Button variant="secondary" size="lg" onClick={() => onMoreInfo?.(movie)}>
             <InformationIcon /> More Info
           </Button>
         </motion.div>
@@ -141,11 +151,11 @@ const Banner = ({ movie, onMoreInfo }) => {
 
       {/* Mute / Replay control */}
       {trailerKey && (
-        <div className="absolute bottom-28 right-4 md:right-12 z-10 flex items-center gap-3">
+        <div className="absolute right-4 bottom-28 z-10 flex items-center gap-3 md:right-12">
           {showTrailer && (
             <button
               onClick={() => setIsMuted(!isMuted)}
-              className="w-10 h-10 rounded-full border border-white/40 flex items-center justify-center bg-black/30 hover:bg-black/50 text-white transition-colors text-sm"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-black/30 text-sm text-white transition-colors hover:bg-black/50"
               title={isMuted ? 'Unmute' : 'Mute'}
             >
               {isMuted ? '🔇' : '🔊'}
@@ -161,7 +171,7 @@ const Banner = ({ movie, onMoreInfo }) => {
                 setShowTrailer(true);
               }
             }}
-            className="w-10 h-10 rounded-full border border-white/40 flex items-center justify-center bg-black/30 hover:bg-black/50 text-white transition-colors text-sm"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-black/30 text-sm text-white transition-colors hover:bg-black/50"
             title={showTrailer ? 'Stop trailer' : 'Play trailer'}
           >
             {showTrailer ? '⏹' : '▶'}

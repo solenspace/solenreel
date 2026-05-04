@@ -1,3 +1,4 @@
+// @ts-check
 import { useQuery } from '@tanstack/react-query';
 import {
   fetchTrending,
@@ -36,47 +37,53 @@ export function useTopRated() {
   });
 }
 
+/** @param {number | undefined} genreId */
 export function useGenreMovies(genreId) {
   return useQuery({
     queryKey: ['movies', 'genre', genreId],
-    queryFn: () => fetchByGenre(genreId),
+    queryFn: () => fetchByGenre(/** @type {number} */ (genreId)),
     staleTime: 1000 * 60 * 10,
     enabled: !!genreId,
   });
 }
 
+/** @param {number | string | null | undefined} movieId */
 export function useMovieDetails(movieId) {
   return useQuery({
     queryKey: ['movie', movieId],
-    queryFn: () => fetchMovieDetails(movieId),
+    queryFn: () => fetchMovieDetails(/** @type {number | string} */ (movieId)),
     enabled: !!movieId,
   });
 }
 
+/** @param {number | string | null | undefined} tvId */
 export function useTVDetails(tvId) {
   return useQuery({
     queryKey: ['tv', tvId],
-    queryFn: () => fetchTVDetails(tvId),
+    queryFn: () => fetchTVDetails(/** @type {number | string} */ (tvId)),
     enabled: !!tvId,
   });
 }
 
+/** @param {number | string | undefined} movieId */
 export function useMovieImages(movieId) {
   return useQuery({
     queryKey: ['movie', movieId, 'images'],
-    queryFn: () => fetchMovieImages(movieId),
+    queryFn: () => fetchMovieImages(/** @type {number | string} */ (movieId)),
     enabled: !!movieId,
   });
 }
 
+/** @param {number | string | undefined} movieId */
 export function useMovieVideos(movieId) {
   return useQuery({
     queryKey: ['movie', movieId, 'videos'],
-    queryFn: () => fetchMovieVideos(movieId),
+    queryFn: () => fetchMovieVideos(/** @type {number | string} */ (movieId)),
     enabled: !!movieId,
   });
 }
 
+/** @param {string} query */
 export function useSearch(query) {
   return useQuery({
     queryKey: ['search', query],
@@ -99,7 +106,12 @@ export function useHomeRows() {
   return {
     rows: [
       { title: 'Trending Now', data: trending.data, isLoading: trending.isLoading },
-      { title: 'Originals', data: originals.data, isLoading: originals.isLoading, isLargeRow: true },
+      {
+        title: 'Originals',
+        data: originals.data,
+        isLoading: originals.isLoading,
+        isLargeRow: true,
+      },
       { title: 'Top Rated', data: topRated.data, isLoading: topRated.isLoading },
       { title: 'Action Movies', data: action.data, isLoading: action.isLoading },
       { title: 'Comedy Movies', data: comedy.data, isLoading: comedy.isLoading },

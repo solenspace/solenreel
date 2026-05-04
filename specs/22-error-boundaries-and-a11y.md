@@ -14,19 +14,19 @@ Tighten the rough edges before deploy. Repurpose the existing `ErrorBoundary`/`E
 
 ## Design Decisions
 
-- **Error boundary placement**: route-level. Each top route (`/`, `/search`, `/movie/:id`, `/profile`, `/auth/*`) wraps its content in `<ErrorBoundary fallback={<ErrorFallback />} />`. Inner widgets (For You row, Intent Results) handle their *expected* error states inline (per their own specs); the route-level boundary catches unexpected exceptions only.
+- **Error boundary placement**: route-level. Each top route (`/`, `/search`, `/movie/:id`, `/profile`, `/auth/*`) wraps its content in `<ErrorBoundary fallback={<ErrorFallback />} />`. Inner widgets (For You row, Intent Results) handle their _expected_ error states inline (per their own specs); the route-level boundary catches unexpected exceptions only.
 - **Prose-first error catalog** at `src/shared/ui/error-messages.js`:
-    ```js
-    /** @type {Record<string, string>} */
-    export const errorMessages = {
-      tmdb_unavailable: "the movies aren't loading. trying again.",
-      assistant_offline: "the assistant is offline — try a literal title search.",
-      assistant_rate_limit: "the free tier is rate-limited. give it a minute and try again.",
-      sign_in_required: "sign in to ask reel for recommendations.",
-      unknown: "something broke. reload the page.",
-    };
-    ```
-   Centralized so wording stays consistent and reviewable. No emojis. No marketing voice.
+  ```js
+  /** @type {Record<string, string>} */
+  export const errorMessages = {
+    tmdb_unavailable: "the movies aren't loading. trying again.",
+    assistant_offline: 'the assistant is offline — try a literal title search.',
+    assistant_rate_limit: 'the free tier is rate-limited. give it a minute and try again.',
+    sign_in_required: 'sign in to ask reel for recommendations.',
+    unknown: 'something broke. reload the page.',
+  };
+  ```
+  Centralized so wording stays consistent and reviewable. No emojis. No marketing voice.
 - **`prefers-reduced-motion`**:
   - Trailer hover autoplay → no mount (already enforced in spec 12; verify here).
   - Framer Motion transitions → bypassed via the `useReducedMotion()` hook from `framer-motion` itself; transitions become instant.
@@ -48,12 +48,12 @@ Tighten the rough edges before deploy. Repurpose the existing `ErrorBoundary`/`E
 1. Create `src/shared/ui/error-messages.js` with the catalog and a `getErrorMessage(code)` helper that falls back to `unknown`.
 2. Update `src/shared/ui/error-fallback.jsx` (post-spec-01) to consume the catalog. Props: `code?: string`, `error?: Error`. Renders the prose message + a "reload" or "back" button per context.
 3. Wrap each route in `<ErrorBoundary>` inside `src/app/router.jsx`. Pattern:
-    ```jsx
-    {
-      path: '/',
-      element: <ErrorBoundary fallback={<ErrorFallback />}><Home /></ErrorBoundary>,
-    }
-    ```
+   ```jsx
+   {
+     path: '/',
+     element: <ErrorBoundary fallback={<ErrorFallback />}><Home /></ErrorBoundary>,
+   }
+   ```
 4. Add `<a class="skip-link" href="#main">skip to content</a>` as the first child of `<AppLayout>` and `<AuthLayout>`. CSS at `src/main.css` (`@layer utilities`) hides it off-screen, brings it on focus.
 5. Add `id="main"` to the `<main>` element in both layouts.
 6. Update tile rows (`<Row>`, spec 10) to handle arrow-key focus cycling. Implementation: `onKeyDown` on the row container, capture `ArrowLeft`/`ArrowRight`, focus next/prev `[data-tile]` element. `Home`/`End` jumps to first/last.
@@ -64,9 +64,11 @@ Tighten the rough edges before deploy. Repurpose the existing `ErrorBoundary`/`E
    - Add `useReducedMotion()` to any Framer Motion component left over (e.g., the skeleton shimmer animation): set `animate` to `'idle'` when `reduce` is true.
 10. Add an automated contrast check at `src/main.css.test.js` (extending spec 7's): for each token pair (e.g. `--color-ink` on `--color-bg`), compute contrast ratio, assert ≥ 4.5 for ink-on-bg, ≥ 3 for ink-muted-on-bg-elevated.
 11. Tests (run through `test-writer`):
-   - `src/shared/ui/error-fallback.test.jsx` — parameterized: each code in the catalog renders the documented message; unknown code renders the `unknown` message.
-   - `src/widgets/row/row.test.jsx` extension: arrow keys cycle focus through tiles; Home/End jump.
-   - Search bar `aria-label` reflects the current mode.
+
+- `src/shared/ui/error-fallback.test.jsx` — parameterized: each code in the catalog renders the documented message; unknown code renders the `unknown` message.
+- `src/widgets/row/row.test.jsx` extension: arrow keys cycle focus through tiles; Home/End jump.
+- Search bar `aria-label` reflects the current mode.
+
 12. Manual smoke: keyboard-only walkthrough of the entire app (sign in → home → tile → trailer page → back → search bar → intent submit → tile → trailer → sign out). Verify no traps. With reduced-motion enabled in OS, hover tiles → no trailers.
 13. Run all gates. Commit as `chore: error boundaries + a11y polish (keyboard, motion, contrast)`.
 
@@ -86,14 +88,17 @@ Tighten the rough edges before deploy. Repurpose the existing `ErrorBoundary`/`E
 ## Agents & Skills
 
 **Agents (mandatory invocation):**
+
 - `fsd-architect` — verifies route-level `<ErrorBoundary>` placement and the centralized `error-messages.js` catalog (no inline error strings scattered across components).
 - `test-writer` — runs at step 11 for error-fallback tests (parameterized over codes), row arrow-key tests, search-bar aria-label tests.
 
 **Skills (consulted by the agents during this spec):**
+
 - **`.claude/skills/web-design-guidelines/SKILL.md`** — accessibility, contrast, keyboard navigation, motion preferences (the load-bearing skill for this spec).
 - `.claude/skills/vercel-react-best-practices/rules/client-passive-event-listeners.md` — informs the global keyboard listeners' `passive` flag.
 
 **Notes:**
+
 - `prefers-reduced-motion: reduce` honored across trailer hover (spec 12), Framer Motion transitions, skeleton shimmer.
 - Contrast verified at WCAG AA: matte-purple `#b69ad8` on `#0a090c` is ~9.8:1 (well above 4.5:1).
 - No `prompt-engineer` here.

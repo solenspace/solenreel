@@ -2,8 +2,9 @@
 
 This is the canonical entry file for **reel**, a movie discovery app built on
 React 19 + Vite 6 + JavaScript (with JSDoc) + Tailwind v4 + Supabase + OpenRouter
-+ TMDB. The repository is a single-app workspace; there are no app-level
-overlays.
+
+- TMDB. The repository is a single-app workspace; there are no app-level
+  overlays.
 
 Read the following files in order before implementing or making any
 architectural decision:

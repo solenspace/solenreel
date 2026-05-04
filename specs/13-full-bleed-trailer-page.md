@@ -26,7 +26,7 @@ Build the click-through destination: `/movie/:id` renders a full-bleed YouTube t
 - **Loading state**: while `useMovieDetails` is pending, render a `SkeletonBanner`-style placeholder for the hero + skeleton text rows for the metadata. After 800 ms still pending, swap to `"reel is loading"` per the same pattern as spec 11.
 - **Error state**: 404-equivalent error if `useMovieDetails` returns no result for the id (typo URL). Renders a minimal message: `"that movie isn't on tmdb."` with a link back to home.
 - **No watchlist button, no share button**. Watchlist is out of scope v1; share buttons add tracking surface we don't want.
-- **Banner / BannerAmbient legacy**: the netflix-clone's Banner concept is *replaced* by this page's hero. Spec 11 already removed Banner from home; this spec optionally deletes the legacy Banner files (no consumers remain after this spec). Leaving them undeleted is acceptable — final cleanup pass happens at spec 23.
+- **Banner / BannerAmbient legacy**: the netflix-clone's Banner concept is _replaced_ by this page's hero. Spec 11 already removed Banner from home; this spec optionally deletes the legacy Banner files (no consumers remain after this spec). Leaving them undeleted is acceptable — final cleanup pass happens at spec 23.
 
 ## Implementation
 
@@ -64,14 +64,17 @@ Build the click-through destination: `/movie/:id` renders a full-bleed YouTube t
 ## Agents & Skills
 
 **Agents (mandatory invocation):**
+
 - `fsd-architect` — runs after step 4 (router rewire). Verifies the page lives under `src/app/pages/movie-detail/`, consumers go through hooks not direct fetches.
 - `test-writer` — runs at step 6 for both test files. Validates `Esc`-keystroke assertion and the audio-enabled mode-`'full'` assertion.
 
 **Skills (consulted by the agents during this spec):**
+
 - `.claude/skills/web-design-guidelines/SKILL.md` — keyboard-navigation pattern (`/`, `Esc`, `Tab`, `Enter`).
 - `.claude/skills/vercel-react-best-practices/rules/async-suspense-boundaries.md` — informs the loading state placement.
 - `.claude/skills/vercel-composition-patterns/rules/architecture-compound-components.md` — `<Tile variant="compact" />` for the optional more-like-this row.
 
 **Notes:**
+
 - `react-player` v2.x. Audio is enabled here only because the click that brought the user counts as a user gesture per browser autoplay policy.
 - No `prompt-engineer` here.

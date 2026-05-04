@@ -1,3 +1,4 @@
+// @ts-check
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -32,7 +33,7 @@ const AppLayout = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="bg-bg min-h-screen">
       <Navbar />
       <main>
         <ErrorBoundary>

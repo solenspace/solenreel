@@ -17,14 +17,14 @@ Land the first Supabase migration: a `profiles` table that 1:1 mirrors `auth.use
 
 - **Migration filename**: `supabase/migrations/0001_profiles.sql`. Numbered, append-only — never edit a past migration.
 - **Schema**:
-    ```sql
-    create table public.profiles (
-      id uuid primary key references auth.users(id) on delete cascade,
-      display_name text,
-      created_at timestamptz not null default now()
-    );
-    alter table public.profiles enable row level security;
-    ```
+  ```sql
+  create table public.profiles (
+    id uuid primary key references auth.users(id) on delete cascade,
+    display_name text,
+    created_at timestamptz not null default now()
+  );
+  alter table public.profiles enable row level security;
+  ```
 - **RLS policies** (named so they're greppable later; uses Supabase's recommended `to authenticated` + `(select auth.uid())` form for performance per current docs):
   - `profiles_select_own` — `for select to authenticated using ((select auth.uid()) = id)`
   - `profiles_insert_own` — `for insert to authenticated with check ((select auth.uid()) = id)`
@@ -32,26 +32,29 @@ Land the first Supabase migration: a `profiles` table that 1:1 mirrors `auth.use
   - **No delete policy** — profile rows are deleted only via the `on delete cascade` from `auth.users`. Clients cannot delete profile rows directly. RLS denies UPDATE/DELETE by default when no policy exists for the operation.
   - `to authenticated` skips evaluating the policy for `anon` users (faster, clearer intent). `(select auth.uid())` triggers Postgres initPlan caching, faster query plans on tables with many rows.
 - **Trigger** to auto-create a profile on signup:
-    ```sql
-    create function public.handle_new_user()
-    returns trigger
-    language plpgsql
-    security definer
-    set search_path = public
-    as $$
-    begin
-      insert into public.profiles (id) values (new.id);
-      return new;
-    end;
-    $$;
 
-    create trigger on_auth_user_created
-      after insert on auth.users
-      for each row execute function public.handle_new_user();
-    ```
+  ```sql
+  create function public.handle_new_user()
+  returns trigger
+  language plpgsql
+  security definer
+  set search_path = public
+  as $$
+  begin
+    insert into public.profiles (id) values (new.id);
+    return new;
+  end;
+  $$;
+
+  create trigger on_auth_user_created
+    after insert on auth.users
+    for each row execute function public.handle_new_user();
+  ```
+
   - `security definer` is required because the trigger inserts on a row the new user doesn't yet "own" at trigger-time. The function's search path is locked to mitigate search-path attacks.
+
 - **Generated types**: `pnpx supabase gen types typescript --linked > src/shared/types/supabase.d.ts.tmp`, then converted to a JSDoc-friendly typedef file at `src/shared/types/supabase.js`. The generation+conversion step runs as a `pnpm types:gen` script so future schema changes are reproducible.
-- **`profiles` is treated as a protected schema file** going forward — any change to it ships in a *new* migration (`0002_*`, `0003_*`), never an in-place edit of `0001_profiles.sql`.
+- **`profiles` is treated as a protected schema file** going forward — any change to it ships in a _new_ migration (`0002_*`, `0003_*`), never an in-place edit of `0001_profiles.sql`.
 
 ## Implementation
 
@@ -83,16 +86,20 @@ Land the first Supabase migration: a `profiles` table that 1:1 mirrors `auth.use
 ## Agents & Skills
 
 **Agents (mandatory invocation):**
+
 - `test-writer` — drives the RLS test suite at step 6. Each policy gets at least one positive case (signed-in owner can do X) and one negative case (signed-in non-owner blocked, anon blocked). Parameterized over policy names.
 
 **Skills (consulted by the agents during this spec):**
+
 - **`.claude/skills/supabase-postgres-best-practices/SKILL.md`** — authoritative source for the RLS phrasing (`to authenticated`, `(select auth.uid())`), security-definer triggers, and migration file conventions used here. Mandatory read.
 - **`.claude/skills/supabase/SKILL.md`** — informs the auth.users → public.profiles relationship and signup-trigger pattern.
 
 **MCPs available during this spec:**
+
 - **Supabase MCP** — Claude applies the migration via `apply_migration`, verifies tables/policies/triggers via `list_tables` + `execute_sql`, and runs the RLS test queries directly without leaving the IDE.
 
 **Notes:**
+
 - No `fsd-architect` invocation (no source-tree changes outside the protected `src/shared/types/supabase.js` regen).
 - No `prompt-engineer` invocation.
 - The migration filename `0001_profiles.sql` is set as immutable by `ai-workflow-rules.md` §"Protected files" — never edited in place; future schema changes ship in new numbered migrations.
