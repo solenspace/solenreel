@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@theme {
+  --color-netflix-red: #DB202C;
+  --color-netflix-red-hover: #b71c1c;
+  --color-netflix-black: #141414;
+  --color-netflix-dark: #181818;
+  --color-netflix-gray: #2F2F2F;
+  --color-netflix-light-gray: #808080;
+  --color-netflix-text: #e5e5e5;
+}
+
+@layer base {
+  body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    @apply bg-netflix-black text-netflix-text overflow-x-hidden min-h-screen antialiased;
+  }
+
+  * {
+    @apply p-0 m-0 box-border;
+  }
+
+  li {
+    @apply list-none;
+  }
+
+  a {
+    @apply no-underline cursor-pointer;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-white;
+  }
+
+  button {
+    @apply cursor-pointer border-none outline-none;
+  }
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+}

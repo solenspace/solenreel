@@ -1,15 +1,26 @@
 # Claude Code
 .claude/settings.local.json
 
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
 # Node / pnpm
 node_modules/
 .turbo/
 dist/
+dist-ssr/
 build/
 *.tsbuildinfo
 
 # Vite
 .vite/
+*.local
 
 # Env
 .env
@@ -20,10 +31,19 @@ build/
 supabase/.temp/
 supabase/.branches/
 
+# Firebase (legacy from netflix-clone import; removed in spec 05)
+.firebase/
+
 # OS
 .DS_Store
 Thumbs.db
 
 # IDE
-.vscode/
+.vscode/*
+!.vscode/extensions.json
 .idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
