@@ -26,14 +26,14 @@ computed hash). Restore on a fresh checkout: `pnpx skills experimental_install`.
 
 ### Currently installed (6 skills)
 
-| Skill | Source | Load-bearing for |
-|---|---|---|
-| `vercel-composition-patterns` | `vercel-labs/agent-skills` | specs 10, 18, 20, 21 (compound components, slot APIs, variant enums) |
-| `vercel-react-best-practices` | `vercel-labs/agent-skills` | specs 09, 12, 15, 18, 21 (data fetching, event handlers, bundle, server cache) |
-| `web-design-guidelines` | `vercel-labs/agent-skills` | specs 07, 08, 22 (a11y, contrast, navigation, motion) |
-| `supabase` | `supabase/agent-skills` | specs 04, 05, 17, 19, 23 (client init, auth, Edge Function patterns, deploy) |
-| `supabase-postgres-best-practices` | `supabase/agent-skills` | specs 06, 14, 16, 17 (RLS, migrations, indexes, jsonb constraints) |
-| `playwright-best-practices` | `currents-dev/playwright-best-practices-skill` | spec 23 (drives Playwright MCP usage; locator hierarchy, accessibility snapshots) |
+| Skill                              | Source                                         | Load-bearing for                                                                  |
+| ---------------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------- |
+| `vercel-composition-patterns`      | `vercel-labs/agent-skills`                     | specs 10, 18, 20, 21 (compound components, slot APIs, variant enums)              |
+| `vercel-react-best-practices`      | `vercel-labs/agent-skills`                     | specs 09, 12, 15, 18, 21 (data fetching, event handlers, bundle, server cache)    |
+| `web-design-guidelines`            | `vercel-labs/agent-skills`                     | specs 07, 08, 22 (a11y, contrast, navigation, motion)                             |
+| `supabase`                         | `supabase/agent-skills`                        | specs 04, 05, 17, 19, 23 (client init, auth, Edge Function patterns, deploy)      |
+| `supabase-postgres-best-practices` | `supabase/agent-skills`                        | specs 06, 14, 16, 17 (RLS, migrations, indexes, jsonb constraints)                |
+| `playwright-best-practices`        | `currents-dev/playwright-best-practices-skill` | spec 23 (drives Playwright MCP usage; locator hierarchy, accessibility snapshots) |
 
 All six have meaningful install counts on the skills.sh registry (validated
 by community use). To add a new skill, validate it on https://skills.sh first,
@@ -45,10 +45,10 @@ files — the CLI is the source of truth.
 Two MCP servers are configured at **project scope** so they ship with the
 repo. Claude Code reads `.mcp.json` automatically.
 
-| Server | Transport | URL / command | What Claude can do |
-|---|---|---|---|
-| `playwright` | stdio | `npx -y @playwright/mcp@latest` | Drive a real Chromium: navigate, click, type, snapshot the accessibility tree. Replaces written Playwright test files (no `@playwright/test` devDep). Used for visual smoke in spec 23 and ad-hoc UI verification any time. |
-| `supabase` | HTTP | `https://mcp.supabase.com/mcp` (`supabase-community/supabase-mcp`) | Apply migrations, run SQL, deploy Edge Functions, list tables, get logs. First use triggers dynamic client registration; the token persists. |
+| Server       | Transport | URL / command                                                      | What Claude can do                                                                                                                                                                                                          |
+| ------------ | --------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `playwright` | stdio     | `npx -y @playwright/mcp@latest`                                    | Drive a real Chromium: navigate, click, type, snapshot the accessibility tree. Replaces written Playwright test files (no `@playwright/test` devDep). Used for visual smoke in spec 23 and ad-hoc UI verification any time. |
+| `supabase`   | HTTP      | `https://mcp.supabase.com/mcp` (`supabase-community/supabase-mcp`) | Apply migrations, run SQL, deploy Edge Functions, list tables, get logs. First use triggers dynamic client registration; the token persists.                                                                                |
 
 To reinstall MCPs on a fresh checkout (the `.mcp.json` file is enough — Claude
 Code reads it directly), but to recreate the JSON if it was lost:

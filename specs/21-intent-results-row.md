@@ -41,12 +41,12 @@ Render the intent-search Edge Function's results on the Search page, in editoria
 ## Implementation
 
 1. Update `src/app/pages/Search.jsx` (post-spec-01) to branch on URL params:
-    ```jsx
-    const params = useSearchParams();
-    if (params.get('intent')) return <IntentResults prompt={params.get('intent')} />;
-    if (params.get('q')) return <TitleResults query={params.get('q')} />;
-    return <SearchEmptyState />;
-    ```
+   ```jsx
+   const params = useSearchParams();
+   if (params.get('intent')) return <IntentResults prompt={params.get('intent')} />;
+   if (params.get('q')) return <TitleResults query={params.get('q')} />;
+   return <SearchEmptyState />;
+   ```
    `SearchEmptyState` is a small "type something to begin" panel that the literal-mode user sees before hitting Enter.
 2. Create `src/widgets/intent-results/intent-results.jsx`:
    - Calls `useIntentSearch()` once on mount (passing the `prompt`).
@@ -82,14 +82,17 @@ Render the intent-search Edge Function's results on the Search page, in editoria
 ## Agents & Skills
 
 **Agents (mandatory invocation):**
+
 - `fsd-architect` — verifies the IntentResults widget lives in `widgets/intent-results/`, consumes only `entities/` + `features/intent-search` (the hook), never reaches across into other features sideways.
 - `test-writer` — runs at step 5 for both test files. Validates parameterized error-state cases (401/429/502/network) and the partial-flag branching.
 
 **Skills (consulted by the agents during this spec):**
+
 - **`.claude/skills/vercel-composition-patterns/rules/architecture-compound-components.md`** — `<Tile.Reasoning />` slot override is the canonical compound-component pattern in the project.
 - `.claude/skills/web-design-guidelines/SKILL.md` — error-state voice ("the assistant is offline — try a literal title search."), thinking-indicator typography (mono font), prose-first messaging.
 - `.claude/skills/vercel-react-best-practices/rules/async-suspense-boundaries.md` — informs whether `useIntentSearch().mutate` blocks render or shows the thinking indicator imperatively (this spec stays imperative).
 
 **Notes:**
+
 - Reasoning line styling uses `--color-ink-muted` (`#a89fb3`); the matte-purple accent does not appear on the reasoning line itself.
 - No `prompt-engineer` here (the prompt itself is in spec 19; this spec only consumes the structured response).

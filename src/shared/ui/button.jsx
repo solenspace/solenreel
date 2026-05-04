@@ -1,3 +1,6 @@
+// @ts-check
+
+/** @type {Record<string, string>} */
 const variants = {
   primary: 'bg-accent hover:bg-accent text-white',
   secondary: 'bg-gray-600/50 hover:bg-gray-600/70 text-white',
@@ -5,6 +8,7 @@ const variants = {
   play: 'bg-white hover:bg-white/80 text-black',
 };
 
+/** @type {Record<string, string>} */
 const sizes = {
   sm: 'px-3 py-1.5 text-sm',
   md: 'px-5 py-2 text-base',
@@ -12,6 +16,12 @@ const sizes = {
   full: 'w-full px-5 py-3 text-base',
 };
 
+/**
+ * @param {React.ButtonHTMLAttributes<HTMLButtonElement> & {
+ *   variant?: keyof typeof variants,
+ *   size?: keyof typeof sizes,
+ * }} props
+ */
 const Button = ({ variant = 'primary', size = 'md', children, className = '', ...props }) => {
   return (
     <button

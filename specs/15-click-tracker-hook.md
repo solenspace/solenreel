@@ -16,22 +16,22 @@ Wire the client side of the events pipeline. After this spec, every meaningful i
 ## Design Decisions
 
 - **Hook**: `useClickTracker()` at `src/features/click-tracker/use-click-tracker.js`. Returns `{ track }`:
-    ```js
-    /**
-     * @param {EventKind} kind
-     * @param {number} tmdbId
-     * @param {Record<string, unknown>} [payload]
-     * @returns {void}
-     */
-    track(kind, tmdbId, payload?)
-    ```
+  ```js
+  /**
+   * @param {EventKind} kind
+   * @param {number} tmdbId
+   * @param {Record<string, unknown>} [payload]
+   * @returns {void}
+   */
+  track(kind, tmdbId, payload?)
+  ```
 - **Module-scoped queue + flush timer** (not React state): inside the hook module, a single mutable queue holds pending events. Flushing fires a `supabase.from('events').insert(batch)` call. The hook itself is just a thin wrapper that reads `auth.uid()` from Redux and pushes to the queue.
 - **Flush triggers**:
   - Queue size ≥ 5 events → flush immediately.
   - 2 s elapsed since the first queued event → flush.
   - `visibilitychange` to `hidden` → synchronous flush via `navigator.sendBeacon` (or fetch with `keepalive: true` against the Supabase REST endpoint), so the user-leaves-tab case doesn't lose data.
   - Sign-out → drop the queue (don't try to write events for a logged-out user).
-- **Dedupe per session**: a `Set<\`${kind}:${tmdbId}\`>` lives in module scope. `tile_click` and `hover_start` are deduped (one per movie per session). `trailer_play` is deduped (one per movie per session — even if the user replays). `trailer_complete` is **not** deduped (signal that the trailer finished is meaningful every time). The dedupe set is cleared on sign-out.
+- **Dedupe per session**: a `Set<\`${kind}:${tmdbId}\`>`lives in module scope.`tile_click`and`hover_start`are deduped (one per movie per session).`trailer_play`is deduped (one per movie per session — even if the user replays).`trailer_complete` is **not** deduped (signal that the trailer finished is meaningful every time). The dedupe set is cleared on sign-out.
 - **Signed-out users**: `track()` is a no-op. No queue accumulation, no localStorage stash. Reel for guests is browse-only with no personalization.
 - **Failure mode**: a flush failure (network error, RLS error) logs to `console.warn` in dev, swallows in prod (no UI surface — events are best-effort signal, not user content). Re-queue exactly once before giving up; do not retry indefinitely on backoff.
 - **Payload contents** (documented contract):
@@ -88,15 +88,18 @@ Wire the client side of the events pipeline. After this spec, every meaningful i
 ## Agents & Skills
 
 **Agents (mandatory invocation):**
+
 - `fsd-architect` — verifies the hook lives in `features/click-tracker/` and that all `supabase.from('events').insert(...)` calls go through the shared client.
 - `test-writer` — runs at step 5 for the hook + wiring tests. Validates fake-timer-driven flush triggers + dedupe-set assertions.
 
 **Skills (consulted by the agents during this spec):**
+
 - **`.claude/skills/vercel-react-best-practices/rules/advanced-effect-event-deps.md`** — drives the visibilitychange listener subscription pattern.
 - `.claude/skills/vercel-react-best-practices/rules/advanced-event-handler-refs.md` — keeps the `track` function reference stable across re-renders.
 - `.claude/skills/vercel-react-best-practices/rules/client-event-listeners.md` — sendBeacon and `keepalive: true` patterns.
 - `.claude/skills/vercel-composition-patterns/rules/state-context-interface.md` — drives `<TrackingProvider source>` context shape.
 
 **Notes:**
+
 - Module-scoped queue (not React state) is intentional: the queue must survive component unmounts during route transitions.
 - No `prompt-engineer`.

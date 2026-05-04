@@ -48,17 +48,17 @@ A concrete file-touched checklist. Every item is a move + import-path update or 
 4. Rename `userSlice.jsx` → `user-slice.js`; verify no JSX inside (Redux slice should be pure JS).
 5. Replace literal `"Netflix"` strings in JSX/text with `"reel"`. Confirm by `grep -ri "netflix" src/ | grep -v "netflix-clone"` returns no hits in user-facing strings. Comments/imports referencing Netflix internals (e.g. `fetchNetflixOriginals`) are renamed in spec 09.
 6. Replace the `@theme` block in `src/main.css` with neutral placeholders:
-    ```css
-    @theme {
-      --color-bg: #0a0a0a;
-      --color-bg-elevated: #141414;
-      --color-ink: #f5f5f5;
-      --color-ink-muted: #a3a3a3;
-      --color-border: #262626;
-      --color-accent: #888888;
-      --color-accent-ink: #0a0a0a;
-    }
-    ```
+   ```css
+   @theme {
+     --color-bg: #0a0a0a;
+     --color-bg-elevated: #141414;
+     --color-ink: #f5f5f5;
+     --color-ink-muted: #a3a3a3;
+     --color-border: #262626;
+     --color-accent: #888888;
+     --color-accent-ink: #0a0a0a;
+   }
+   ```
    This is a **placeholder** — spec 07 swaps it for the editorial matte-purple-on-black palette.
 7. Update any class references in JSX that used Netflix tokens (`bg-red`, `text-red`, etc.) to neutral equivalents (`bg-accent`, `text-accent`). Visual change is acknowledged: red → gray.
 8. Update `@/` alias usage everywhere to match the new layer paths.
@@ -78,11 +78,14 @@ A concrete file-touched checklist. Every item is a move + import-path update or 
 ## Agents & Skills
 
 **Agents (mandatory invocation):**
+
 - `fsd-architect` — runs after step 9 (every move complete) to verify upward-only import direction and zero sideways imports. Reads `.claude/skills/web-design-guidelines/SKILL.md` for FSD/layout-pattern context.
 
 **Skills (consulted during this spec):**
+
 - `.claude/skills/web-design-guidelines/SKILL.md` — informs the placeholder header chrome and how layer folders should be named.
 
 **Notes:**
+
 - No `test-writer` invocation: this spec adds zero behavior; tests are unchanged from the imported state.
 - No `prompt-engineer` invocation: no LLM surface in this spec.

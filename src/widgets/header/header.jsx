@@ -1,3 +1,4 @@
+// @ts-check
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useScrolled } from '@/shared/lib/use-scrolled';
@@ -12,6 +13,7 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
+  /** @param {React.FormEvent<HTMLFormElement>} e */
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -23,8 +25,10 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 md:px-12 py-3 transition-all duration-300 ${
-        scrolled ? 'bg-bg/95 backdrop-blur-sm shadow-lg' : 'bg-gradient-to-b from-black/80 to-transparent'
+      className={`fixed top-0 right-0 left-0 z-50 flex items-center justify-between px-4 py-3 transition-all duration-300 md:px-12 ${
+        scrolled
+          ? 'bg-bg/95 shadow-lg backdrop-blur-sm'
+          : 'bg-gradient-to-b from-black/80 to-transparent'
       }`}
     >
       {/* Left */}
@@ -32,11 +36,27 @@ const Navbar = () => {
         <Link to="/" className="flex-shrink-0">
           <NetflixIcon />
         </Link>
-        <ul className="hidden md:flex items-center gap-5">
-          <li><Link to="/" className="text-sm text-white hover:text-gray-300 transition-colors">Home</Link></li>
-          <li><Link to="/search" className="text-sm text-gray-300 hover:text-white transition-colors">TV Shows</Link></li>
-          <li><Link to="/search" className="text-sm text-gray-300 hover:text-white transition-colors">Movies</Link></li>
-          <li><Link to="/search" className="text-sm text-gray-300 hover:text-white transition-colors">New & Popular</Link></li>
+        <ul className="hidden items-center gap-5 md:flex">
+          <li>
+            <Link to="/" className="text-sm text-white transition-colors hover:text-gray-300">
+              Home
+            </Link>
+          </li>
+          <li>
+            <Link to="/search" className="text-sm text-gray-300 transition-colors hover:text-white">
+              TV Shows
+            </Link>
+          </li>
+          <li>
+            <Link to="/search" className="text-sm text-gray-300 transition-colors hover:text-white">
+              Movies
+            </Link>
+          </li>
+          <li>
+            <Link to="/search" className="text-sm text-gray-300 transition-colors hover:text-white">
+              New & Popular
+            </Link>
+          </li>
         </ul>
       </div>
 
@@ -50,9 +70,16 @@ const Navbar = () => {
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.3 }}
               onSubmit={handleSearchSubmit}
-              className="flex items-center bg-black/80 border border-white/50 overflow-hidden"
+              className="flex items-center overflow-hidden border border-white/50 bg-black/80"
             >
-              <button type="button" onClick={() => { setSearchOpen(false); setSearchQuery(''); }} className="px-2 bg-transparent">
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchOpen(false);
+                  setSearchQuery('');
+                }}
+                className="bg-transparent px-2"
+              >
                 <SearchIcon />
               </button>
               <input
@@ -62,17 +89,22 @@ const Navbar = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onBlur={() => !searchQuery && setSearchOpen(false)}
-                className="w-full py-1.5 pr-3 bg-transparent text-white text-sm outline-none placeholder-gray-400"
+                className="w-full bg-transparent py-1.5 pr-3 text-sm text-white placeholder-gray-400 outline-none"
               />
             </motion.form>
           ) : (
-            <button onClick={() => setSearchOpen(true)} className="bg-transparent p-1 hover:opacity-80 transition-opacity">
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="bg-transparent p-1 transition-opacity hover:opacity-80"
+            >
               <SearchIcon />
             </button>
           )}
         </AnimatePresence>
 
-        <button className="bg-transparent hidden sm:block hover:opacity-80 transition-opacity"><BellIcon /></button>
+        <button className="hidden bg-transparent transition-opacity hover:opacity-80 sm:block">
+          <BellIcon />
+        </button>
 
         {/* Profile dropdown */}
         <div
@@ -84,7 +116,7 @@ const Navbar = () => {
             <img
               src="https://mir-s3-cdn-cf.behance.net/project_modules/disp/84c20033850498.56ba69ac290ea.png"
               alt="Profile"
-              className="w-8 h-8 rounded object-cover"
+              className="h-8 w-8 rounded object-cover"
             />
             <ArrowDownIcon />
           </button>
@@ -95,15 +127,18 @@ const Navbar = () => {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="absolute right-0 top-full mt-2 w-48 bg-bg-elevated/95 backdrop-blur-sm border border-gray-700 rounded-md shadow-xl overflow-hidden"
+                className="bg-bg-elevated/95 absolute top-full right-0 mt-2 w-48 overflow-hidden rounded-md border border-gray-700 shadow-xl backdrop-blur-sm"
               >
-                <Link to="/profile" className="block px-4 py-3 text-sm text-gray-300 hover:bg-white/10 transition-colors">
+                <Link
+                  to="/profile"
+                  className="block px-4 py-3 text-sm text-gray-300 transition-colors hover:bg-white/10"
+                >
                   Account
                 </Link>
                 <hr className="border-gray-700" />
                 <button
                   onClick={() => auth.signOut()}
-                  className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-white/10 transition-colors bg-transparent"
+                  className="w-full bg-transparent px-4 py-3 text-left text-sm text-gray-300 transition-colors hover:bg-white/10"
                 >
                   Sign out of reel
                 </button>

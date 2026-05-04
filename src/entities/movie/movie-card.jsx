@@ -1,7 +1,17 @@
+// @ts-check
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { img } from '@/shared/api/tmdb';
 
+/** @typedef {import('@/shared/api/tmdb').Movie} Movie */
+
+/**
+ * @param {{
+ *   movie: Movie,
+ *   isLargeRow?: boolean,
+ *   onClick?: (movie: Movie) => void,
+ * }} props
+ */
 const MovieCard = ({ movie, isLargeRow = false, onClick }) => {
   const [isHovered, setIsHovered] = useState(false);
   const posterUrl = isLargeRow
@@ -24,22 +34,18 @@ const MovieCard = ({ movie, isLargeRow = false, onClick }) => {
         alt={movie.title || movie.name}
         className={`rounded-md object-cover transition-shadow duration-300 ${
           isLargeRow ? 'h-[250px] w-[170px]' : 'h-[160px] w-[280px]'
-        } ${isHovered ? 'shadow-2xl shadow-black/50 ring-1 ring-white/20' : ''}`}
+        } ${isHovered ? 'shadow-2xl ring-1 shadow-black/50 ring-white/20' : ''}`}
         loading="lazy"
       />
       {isHovered && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/90 to-transparent rounded-b-md"
+          className="absolute right-0 bottom-0 left-0 rounded-b-md bg-gradient-to-t from-black/90 to-transparent p-2"
         >
-          <p className="text-white text-xs font-medium truncate">
-            {movie.title || movie.name}
-          </p>
+          <p className="truncate text-xs font-medium text-white">{movie.title || movie.name}</p>
           {movie.vote_average > 0 && (
-            <p className="text-green-400 text-xs">
-              {Math.round(movie.vote_average * 10)}% Match
-            </p>
+            <p className="text-xs text-green-400">{Math.round(movie.vote_average * 10)}% Match</p>
           )}
         </motion.div>
       )}

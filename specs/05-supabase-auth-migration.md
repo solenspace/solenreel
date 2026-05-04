@@ -63,18 +63,22 @@ Replace Firebase Auth with Supabase Auth across the codebase. After this spec, F
 ## Agents & Skills
 
 **Agents (mandatory invocation):**
+
 - `fsd-architect` — runs after every file move/delete in step 6, and after the slice/hook authoring in step 1, to verify entities/user does not import from features.
 - `test-writer` — invoked at step 9 for the three test files (use-auth-session, auth-actions, Login). Validates the parameterized error-path tests and the `onAuthStateChange` subscription test.
 
 **Skills (consulted by the agents during this spec):**
+
 - **`.claude/skills/supabase/SKILL.md`** — authoritative for `signInWithPassword`, `signUp`, `signOut`, `onAuthStateChange` patterns. Replaces ad-hoc Firebase patterns with Supabase-canonical ones.
 - `.claude/skills/vercel-react-best-practices/rules/client-event-listeners.md` — `onAuthStateChange` subscribe-once / unsubscribe-on-unmount.
 - `.claude/skills/vercel-react-best-practices/rules/advanced-init-once.md` — drives the "subscribe once at the providers boundary" pattern for `useAuthSession`.
 
 **MCPs available during this spec:**
+
 - **Supabase MCP** — verify auth users via `list_tables` / `execute_sql` against `auth.users` after the manual sign-up smoke (step 10).
 - **Playwright MCP** — sign-up / sign-in / sign-out flow walkthrough in step 11 (manual smoke replaced by `browser_navigate` + `browser_type` + `browser_click` + `browser_snapshot`).
 
 **Notes:**
+
 - No `prompt-engineer` here.
 - The Firebase deletions (firebase.json, .firebaserc, the workflow file) are physical-file removals; `fsd-architect` re-verifies after deletions land.

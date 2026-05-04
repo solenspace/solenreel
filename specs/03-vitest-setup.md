@@ -39,22 +39,24 @@ Stand up a Vitest harness wired into Vite, with the global mocks every later spe
    - `jsdom`
 2. Add the `test` script: `"test": "vitest run"`, plus `"test:watch": "vitest"`, `"test:coverage": "vitest run --coverage"`.
 3. Create `vitest.config.js`:
-    ```js
-    // @ts-check
-    import { defineConfig } from 'vitest/config';
-    import path from 'node:path';
 
-    export default defineConfig({
-      resolve: { alias: { '@': path.resolve(__dirname, 'src') } },
-      test: {
-        environment: 'jsdom',
-        globals: true,
-        setupFiles: ['./src/test-setup.js'],
-        css: true,
-        coverage: { reporter: ['text', 'lcov'] },
-      },
-    });
-    ```
+   ```js
+   // @ts-check
+   import { defineConfig } from 'vitest/config';
+   import path from 'node:path';
+
+   export default defineConfig({
+     resolve: { alias: { '@': path.resolve(__dirname, 'src') } },
+     test: {
+       environment: 'jsdom',
+       globals: true,
+       setupFiles: ['./src/test-setup.js'],
+       css: true,
+       coverage: { reporter: ['text', 'lcov'] },
+     },
+   });
+   ```
+
 4. Create `src/test-setup.js` with the global stubs + matcher import.
 5. Create `src/shared/test/query-wrapper.jsx` and `src/shared/test/redux-wrapper.jsx` factories.
 6. Update `tsconfig.json` `include` to add `vitest.config.js`, `src/**/*.test.{js,jsx}`, and `src/test-setup.js`.
@@ -75,12 +77,15 @@ Stand up a Vitest harness wired into Vite, with the global mocks every later spe
 ## Agents & Skills
 
 **Agents (mandatory invocation):**
+
 - `test-writer` — invoked at step 8 to validate the sample test follows AAA structure, parameterized cases, and behavior-over-implementation rules.
 
 **Skills (consulted by the agents during this spec):**
+
 - `.claude/skills/vercel-react-best-practices/SKILL.md` — general React testing patterns (test isolation, query priorities).
 - `.claude/skills/vercel-react-best-practices/rules/client-event-listeners.md` — informs the IntersectionObserver / matchMedia stub patterns.
 
 **Notes:**
+
 - No `fsd-architect` here: no source-tree changes beyond test scaffolding files.
 - No `prompt-engineer` here.

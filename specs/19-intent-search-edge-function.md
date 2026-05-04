@@ -18,51 +18,51 @@ Stand up `supabase/functions/intent-search/`, an Edge Function that takes a natu
 - **Auth**: JWT required. Same canonical Supabase pattern as spec 17 — forward `Authorization` header into a `createClient`, then `await supabase.auth.getUser()`; 401 if no user. (Public unauth'd intent search would expose us to free-tier model abuse.)
 - **Provider**: OpenRouter free tier, **locked v1 model: `openai/gpt-oss-20b:free`** — confirmed on the OpenRouter model registry (2026-05-04): $0/M tokens in/out, 131K context window, structured outputs supported. Model id read from env `OPENROUTER_MODEL` so it can be swapped without a code change in the Edge Function. **No fallback** — if OpenRouter returns 5xx/429, we return a structured error and the UI shows the offline message.
 - **Catalog snippet**: a precomputed list of ~200 movies (TMDB top-rated + popular union, deduped). Cached at module load (cold-start of the function); regenerated daily. Format injected into the prompt:
-    ```
-    id|title|year|genres|tagline
-    550|Fight Club|1999|Drama,Thriller|Mischief. Mayhem. Soap.
-    ...
-    ```
+  ```
+  id|title|year|genres|tagline
+  550|Fight Club|1999|Drama,Thriller|Mischief. Mayhem. Soap.
+  ...
+  ```
   Token budget: this snippet is the bulk of the prompt; aim for ~3-4 K tokens to leave headroom on the model's window. 200 movies × ~25 tokens each ≈ 5 K — trim or refine if it overflows on chosen model.
 - **System prompt** (drafted; revisable through `prompt-engineer`):
   > You recommend movies to a user who described what they want to watch. You only return ids from the provided catalog snippet — never invent ids, never return ids outside the snippet. For each recommendation, write one short sentence (≤ 12 words) of reasoning, prose-first, no genre lists, no marketing words.
 - **User prompt**: the user's `prompt` body field, sandwiched between fixed framing.
 - **Response format**: `response_format: { type: 'json_schema', json_schema: { name: 'recommendations', strict: true, schema: {...} } }` with the schema declared in `supabase/functions/intent-search/schema.ts`:
-    ```ts
-    {
-      type: 'object',
-      properties: {
+  ```ts
+  {
+    type: 'object',
+    properties: {
+      items: {
+        type: 'array',
+        minItems: 5,
+        maxItems: 10,
         items: {
-          type: 'array',
-          minItems: 5,
-          maxItems: 10,
-          items: {
-            type: 'object',
-            properties: {
-              tmdb_id: { type: 'integer' },
-              reason: { type: 'string', maxLength: 100 },
-            },
-            required: ['tmdb_id', 'reason'],
-            additionalProperties: false,
+          type: 'object',
+          properties: {
+            tmdb_id: { type: 'integer' },
+            reason: { type: 'string', maxLength: 100 },
           },
+          required: ['tmdb_id', 'reason'],
+          additionalProperties: false,
         },
       },
-      required: ['items'],
-      additionalProperties: false,
-    }
-    ```
+    },
+    required: ['items'],
+    additionalProperties: false,
+  }
+  ```
 - **Hallucination guard**: after parsing the response, drop any `item` whose `tmdb_id` is not in the catalog snippet's id set. If the result drops below 5 items, return what we have (don't pad with cold-start), and surface a metadata flag `partial: true` in the response so the UI can show a "limited matches" hint. Note: free-tier models on OpenRouter may degrade `strict: true` to best-effort; the hallucination guard + double-validation is the safety net.
 - **Determinism**: `temperature: 0.2`. Higher temperature led to noisier reasoning lines in pilot runs.
 - **Caching**: identical (prompt, count) pair within 5 minutes returns the same result without re-calling OpenRouter. In-process map with TTL; cleared on cold-start. (No cross-invocation cache in v1 — we run on Supabase Edge Functions which spin up cold per invocation; this is just fast-repeat protection within a single warm container.)
 - **Output schema** (function response, distinct from the LLM response):
-    ```ts
-    type Output = {
-      items: Array<{ tmdb_id: number; reason: string }>;
-      partial: boolean;
-      catalog_size: number;
-      model: string;
-    };
-    ```
+  ```ts
+  type Output = {
+    items: Array<{ tmdb_id: number; reason: string }>;
+    partial: boolean;
+    catalog_size: number;
+    model: string;
+  };
+  ```
 - **Refusing inputs**: empty prompt → 400 `{ error: 'empty_prompt' }`. Prompt > 200 chars → 400 `{ error: 'prompt_too_long' }`. No content moderation in v1; the prompt-engineer agent flags this as future work.
 
 ## Implementation
@@ -90,18 +90,18 @@ Stand up `supabase/functions/intent-search/`, an Edge Function that takes a natu
    - Mocked OpenRouter 5xx → function returns 502.
    - Schema mismatch from LLM (model returned malformed JSON despite `strict`) → function returns 502 `{ error: 'upstream_schema_violation' }`.
 7. Add `src/features/intent-search/use-intent-search.js`:
-    ```js
-    /**
-     * @param {string} prompt
-     * @returns {ReturnType<typeof useMutation>}
-     */
-    export function useIntentSearch() {
-      return useMutation({
-        mutationFn: ({ prompt, count }) =>
-          supabase.functions.invoke('intent-search', { body: { prompt, count } }),
-      });
-    }
-    ```
+   ```js
+   /**
+    * @param {string} prompt
+    * @returns {ReturnType<typeof useMutation>}
+    */
+   export function useIntentSearch() {
+     return useMutation({
+       mutationFn: ({ prompt, count }) =>
+         supabase.functions.invoke('intent-search', { body: { prompt, count } }),
+     });
+   }
+   ```
    This is the consumer hook; UI lands in spec 21.
 8. Manual smoke via `pnpx supabase functions serve intent-search`: hit it with `{ prompt: 'something slow and melancholy' }`, get back 5–10 items with reasoning per pick.
 9. Run a 10-prompt manual test set through `prompt-engineer` to validate hallucination rate, schema compliance rate, and mood-match qualitative score. Store the results in `supabase/functions/intent-search/test-set.md` for future regression checks.
@@ -123,18 +123,22 @@ Stand up `supabase/functions/intent-search/`, an Edge Function that takes a natu
 ## Agents & Skills
 
 **Agents (mandatory invocation):**
+
 - **`prompt-engineer` (mandatory at every step that touches a prompt)** — drives the system prompt in `prompts.ts`, the JSON schema in `schema.ts`, the determinism settings (`temperature: 0.2`), and the 10-prompt regression test set. Owns the file `prompts.ts`; no other agent edits it.
 - `test-writer` — runs at step 6 for the eight Deno test cases (empty prompt, oversize, hallucination 0%/25%/87%, 429, 5xx, schema violation).
 
 **Skills (consulted by the agents during this spec):**
+
 - **`.claude/skills/supabase/SKILL.md`** — Edge Function auth pattern, secret access via `Deno.env.get()`, function deploy. Mandatory read.
 - **User-level `claude-api`** skill (auto-loaded by the harness when an Anthropic SDK is in use; here it informs general LLM-integration patterns even though we use OpenRouter — prompt caching, structured outputs, defense-in-depth schema validation, determinism settings).
 - `.claude/skills/vercel-react-best-practices/rules/async-cheap-condition-before-await.md` — keeps body validation before any LLM call.
 - `.claude/skills/vercel-react-best-practices/rules/server-cache-lru.md` — informs the per-invocation in-memory cache (5-minute TTL).
 
 **MCPs available during this spec:**
+
 - **Supabase MCP** — `deploy_edge_function intent-search`, set the `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` secrets, inspect function logs via `get_logs`.
 
 **Notes:**
+
 - This is the **only** spec where the OpenRouter API key is referenced. `OPENROUTER_API_KEY` reaching `src/` is a defect (success criteria 7).
 - v1 model is locked: `openai/gpt-oss-20b:free`. Architecture-decision log in `progress-tracker.md` records this.

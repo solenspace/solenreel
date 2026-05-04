@@ -22,20 +22,20 @@ Replace the netflix-clone's `MovieCard` and `MovieRow` with reel's editorial til
   - `'list'`: poster (48×72 px) + title + metadata row (year · director · runtime) + 3 mood tags + score.
   - `'compact'`: poster (96×144 px) + title only — for rec-row carousels where space is tight.
 - Compound-component shape (per `vercel-composition-patterns`):
-    ```jsx
-    <Tile movie={m} variant="list" onClick={...}>
-      <Tile.Poster /> <Tile.Body>
-        <Tile.Title /> <Tile.Meta /> <Tile.MoodTags /> <Tile.Score />
-      </Tile.Body>
-    </Tile>
-    ```
+  ```jsx
+  <Tile movie={m} variant="list" onClick={...}>
+    <Tile.Poster /> <Tile.Body>
+      <Tile.Title /> <Tile.Meta /> <Tile.MoodTags /> <Tile.Score />
+    </Tile.Body>
+  </Tile>
+  ```
   Default sub-components are rendered if the children prop is omitted; consumers can override individual slots when they need to (e.g., the for-you row replaces `<Tile.Score />` with a `<Tile.Reasoning />` line in spec 18).
 - **`Row`** lives at `src/widgets/row/row.jsx`. Composes:
   - Title (display serif, 24 px) + optional caption (Inter, 13 px, muted) + optional accent badge slot (used by for-you row).
   - Horizontal scroll container with CSS scroll-snap (`scroll-snap-type: x mandatory`, `scroll-snap-align: start` on each tile).
   - Keyboard nav: arrow keys move focus across tiles when focus is inside the row (a11y polish in spec 22, but the focus surface is set up now).
   - Lazy rendering: only the first 12 tiles render eagerly; the rest mount on scroll-into-view via the `IntersectionObserver` stub (spec 03 setup, spec 12 enforced for trailers).
-- **Mood tags & director** are not yet populated: the `Movie` typedef has the fields but they're empty strings/arrays from TMDB at this point. Tile renders gracefully when those fields are empty (omits the row instead of showing "·  · ").
+- **Mood tags & director** are not yet populated: the `Movie` typedef has the fields but they're empty strings/arrays from TMDB at this point. Tile renders gracefully when those fields are empty (omits the row instead of showing "· · ").
 - **Tabular numerics** for year + runtime (already enabled globally in spec 07's `@layer base`).
 - **No animation on hover yet** — spec 12 adds the trailer hover. Tile here has only a subtle 100 ms `bg-elevated` hover state.
 - **Accessible defaults**: tile is a `<button>` element when `onClick` is provided, an `<article>` when not. Focus ring is the global one from spec 07.
@@ -81,10 +81,12 @@ Replace the netflix-clone's `MovieCard` and `MovieRow` with reel's editorial til
 ## Agents & Skills
 
 **Agents (mandatory invocation):**
+
 - `fsd-architect` — verifies `Tile` lives in `entities/movie/`, `Row` lives in `widgets/`, neither imports from features. Run after step 4 (legacy-file deletion).
 - `test-writer` — runs at step 5 for tile and row tests. Validates parameterized-over-variant tests for `Tile`; validates lazy-render assertion in `Row` (only 12 tiles eagerly mounted).
 
 **Skills (consulted by the agents during this spec):**
+
 - **`.claude/skills/vercel-composition-patterns/rules/architecture-compound-components.md`** — drives the `<Tile.Slot />` API design (this is the spec where compound components are introduced).
 - `.claude/skills/vercel-composition-patterns/rules/patterns-explicit-variants.md` — informs `variant='grid'|'list'|'compact'` over a stack of boolean props.
 - `.claude/skills/vercel-composition-patterns/rules/architecture-avoid-boolean-props.md` — same direction.
@@ -92,5 +94,6 @@ Replace the netflix-clone's `MovieCard` and `MovieRow` with reel's editorial til
 - `.claude/skills/web-design-guidelines/SKILL.md` — density rules from `ui-context.md` derive from this skill.
 
 **Notes:**
+
 - No `prompt-engineer` here.
 - The accent badge slot on `Row` (used by spec 18 For You row) renders matte purple per `ui-context.md`.

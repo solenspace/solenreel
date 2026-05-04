@@ -4,7 +4,7 @@
 
 **reel** is a movie discovery app that learns from your clicks and answers in plain language when you tell it what you feel like watching. It started as a fork of a Netflix-clone reference and has been re-purposed: a different surface (editorial / Letterboxd-feel, dense), a different mechanic (trailer-first browsing, not poster art), and a different intelligence loop (per-user click telemetry feeding a content-based "For You" row, plus a free-tier LLM that maps mood prompts to catalogue picks).
 
-reel is **not** a streaming service. It does not host video; it surfaces the trailer (YouTube via `react-player`) and lets the user decide where to watch. It is a *finder*, not a *player*.
+reel is **not** a streaming service. It does not host video; it surfaces the trailer (YouTube via `react-player`) and lets the user decide where to watch. It is a _finder_, not a _player_.
 
 ## User goals
 
@@ -52,7 +52,7 @@ If a v1 work item creeps into this list, split it into a follow-up spec rather t
 ## Why these choices
 
 - **Editorial / Letterboxd UI**, not Netflix-style poster grid: the differentiator is information density and typography, not bigger art. Netflix already wins on poster shelves.
-- **Trailer autoplay on hover**, not click: the trailer is the most efficient way to convey what a movie *is*. Letting the page sell with motion is the central UX bet.
+- **Trailer autoplay on hover**, not click: the trailer is the most efficient way to convey what a movie _is_. Letting the page sell with motion is the central UX bet.
 - **Mood-prompt intent search**, not natural-language chat: a chat interface adds turns and ceremony for a single decision (what to watch). One-shot prompt with reasoning shown is faster.
 - **Single OpenRouter free model**, no fallback: complexity ceiling. We will revisit if quality is unacceptable, but starting with one provider keeps the mental model simple.
 - **Supabase**, not Firebase: Postgres is a better fit for the events / recommendations data model than Firestore, and Edge Functions are the right home for the OpenRouter key.

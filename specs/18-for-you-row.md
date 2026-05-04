@@ -20,7 +20,7 @@ Render the recommendation result on home as the "For You" row, the differentiato
   1. `useRecommendations()` returns the rec list (array of `{ tmdb_id, score, reason }`).
   2. For each tmdb_id, `useMovieDetails(tmdbId)` fetches the full `Movie` object (cached via TanStack Query, deduped if the same tmdb_id appears in popular too).
   3. The widget renders a `<Row>` with the resolved Movies.
-- **Variant**: `grid` for For You row (matches Popular's density). The rec function output's `score` is not displayed in v1; it's purely for ordering. `reason` is null for content-based recs (spec 17); it gets populated only when intent-search recs are *re-cached* into recommendations (out of scope v1; intent-search returns its own list separately).
+- **Variant**: `grid` for For You row (matches Popular's density). The rec function output's `score` is not displayed in v1; it's purely for ordering. `reason` is null for content-based recs (spec 17); it gets populated only when intent-search recs are _re-cached_ into recommendations (out of scope v1; intent-search returns its own list separately).
 - **Position**: For You row is rendered **above** Popular on home. Order matters: the user's first row of attention is their personalized one.
 - **Cold-start UX**: when the rec function returns `cold_start: true`, the widget hides the accent "For You" badge and renders the row title as `"Recommended for you — keep clicking to teach me"` instead of `"For you"`. Same row otherwise. The hint encourages engagement to lift the cold-start ceiling.
 - **Loading and error states**:
@@ -67,15 +67,18 @@ Render the recommendation result on home as the "For You" row, the differentiato
 ## Agents & Skills
 
 **Agents (mandatory invocation):**
+
 - `fsd-architect` — verifies the widget lives at `widgets/for-you-row/` and consumes only `entities/recommendation` + `entities/movie`, never reaches into `features/`.
 - `test-writer` — runs at step 5 for the widget tests. Cold-start vs warm-start branching is parameterized.
 
 **Skills (consulted by the agents during this spec):**
+
 - **`.claude/skills/vercel-react-best-practices/rules/async-parallel.md`** — drives the parallel `useQueries` resolution of 20 movie ids; no waterfalls.
 - **`.claude/skills/vercel-react-best-practices/rules/client-swr-dedup.md`** — same query keys as Popular row → cache hits, no duplicate cache entries.
 - **`.claude/skills/vercel-composition-patterns/rules/architecture-compound-components.md`** — `Tile.Reasoning` slot is reserved here (populated by intent results in spec 21; null for content-based recs).
 - `.claude/skills/web-design-guidelines/SKILL.md` — accent badge placement and "≤ 3% pixel" discipline.
 
 **Notes:**
+
 - The matte-purple For You badge is the only visual difference between warm-start and cold-start. Title text changes too.
 - No `prompt-engineer` here.

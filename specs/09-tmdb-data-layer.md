@@ -19,25 +19,25 @@ Land the TMDB data access pattern reel uses for the rest of its life: a singleto
   - `fetchNetflixOriginals` → `fetchOriginals` (internally still queries the same TMDB endpoint via the documented Netflix discover filter — the function-name leak is fixed; the API contract is unchanged).
   - All other names from netflix-clone stay (they were already neutral: `fetchTrending`, `fetchPopular`, `fetchTopRated`, `fetchByGenre`, `fetchMovieDetails`, `fetchTVDetails`, `searchMulti`, `fetchMovieImages`, `fetchMovieVideos`).
 - **`Movie` entity** typedef at `src/entities/movie/types.js`:
-    ```js
-    /**
-     * @typedef {object} Movie
-     * @property {number} id
-     * @property {string} title
-     * @property {string} originalTitle
-     * @property {string} releaseDate          // 'YYYY-MM-DD'
-     * @property {number} year                 // derived
-     * @property {string|null} posterPath
-     * @property {string|null} backdropPath
-     * @property {number[]} genreIds
-     * @property {number} voteAverage          // 0..10
-     * @property {string} overview
-     * @property {string|null} tagline
-     * @property {number|null} runtime         // minutes; only on details
-     * @property {string|null} director        // only on details (from credits)
-     * @property {string[]} moodTags           // populated by spec 18 LLM (empty here)
-     */
-    ```
+  ```js
+  /**
+   * @typedef {object} Movie
+   * @property {number} id
+   * @property {string} title
+   * @property {string} originalTitle
+   * @property {string} releaseDate          // 'YYYY-MM-DD'
+   * @property {number} year                 // derived
+   * @property {string|null} posterPath
+   * @property {string|null} backdropPath
+   * @property {number[]} genreIds
+   * @property {number} voteAverage          // 0..10
+   * @property {string} overview
+   * @property {string|null} tagline
+   * @property {number|null} runtime         // minutes; only on details
+   * @property {string|null} director        // only on details (from credits)
+   * @property {string[]} moodTags           // populated by spec 18 LLM (empty here)
+   */
+  ```
   Plus typedefs for `MovieDetails` (extends `Movie` with credits, videos), `Video` (`{ key, site, type, name }`), and `TmdbResponse<T>` (`{ page, results, total_pages, total_results }`).
 - **Mapping layer**: TMDB raw responses are normalized to `Movie` shape inside the client (camelCase, `year` derived, `posterPath` already prefixed with the image base URL helper). Components see normalized shapes only.
 - **TanStack Query hooks** at `src/entities/movie/queries.js`:
@@ -86,14 +86,17 @@ Land the TMDB data access pattern reel uses for the rest of its life: a singleto
 ## Agents & Skills
 
 **Agents (mandatory invocation):**
+
 - `fsd-architect` — verifies the single TMDB-client invariant (axios only inside `src/shared/api/tmdb.js`) and the no-fetch-in-useEffect rule. Run after step 5 (consumer refactor).
 - `test-writer` — runs at step 6 for the two test files (tmdb.test, queries.test). Validates parameterized-over-endpoint tests + the `useDebounce` assertion in `useSearchMulti`.
 
 **Skills (consulted by the agents during this spec):**
+
 - `.claude/skills/vercel-react-best-practices/rules/client-swr-dedup.md` — drives query-key conventions and de-duplication strategy.
 - `.claude/skills/vercel-react-best-practices/rules/async-parallel.md` — informs how multiple TMDB calls can be parallelized via `Promise.all` inside details fetching.
 - `.claude/skills/vercel-react-best-practices/rules/bundle-barrel-imports.md` — keeps imports concrete (no barrel re-exports).
 
 **Notes:**
+
 - No `prompt-engineer` here.
 - TanStack Query v5 confirmed: `gcTime` (formerly `cacheTime`), `useQueries` for parallel fetches, `queryClient.invalidateQueries({ queryKey })` for invalidation.

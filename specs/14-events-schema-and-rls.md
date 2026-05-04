@@ -16,31 +16,34 @@ Land the second migration: an append-only `events` table that records every per-
 
 - **Migration filename**: `supabase/migrations/0002_events.sql`.
 - **Schema**:
-    ```sql
-    create type public.event_kind as enum (
-      'tile_click',
-      'hover_start',
-      'trailer_play',
-      'trailer_complete'
-    );
 
-    create table public.events (
-      id bigserial primary key,
-      user_id uuid not null references auth.users(id) on delete cascade,
-      kind public.event_kind not null,
-      tmdb_id integer not null,
-      payload jsonb not null default '{}'::jsonb,
-      created_at timestamptz not null default now()
-    );
-    create index events_user_id_created_at_desc
-      on public.events (user_id, created_at desc);
-    create index events_user_id_tmdb_id
-      on public.events (user_id, tmdb_id);
-    alter table public.events enable row level security;
-    ```
+  ```sql
+  create type public.event_kind as enum (
+    'tile_click',
+    'hover_start',
+    'trailer_play',
+    'trailer_complete'
+  );
+
+  create table public.events (
+    id bigserial primary key,
+    user_id uuid not null references auth.users(id) on delete cascade,
+    kind public.event_kind not null,
+    tmdb_id integer not null,
+    payload jsonb not null default '{}'::jsonb,
+    created_at timestamptz not null default now()
+  );
+  create index events_user_id_created_at_desc
+    on public.events (user_id, created_at desc);
+  create index events_user_id_tmdb_id
+    on public.events (user_id, tmdb_id);
+  alter table public.events enable row level security;
+  ```
+
   - `id` is `bigserial`, not `uuid`. Reason: events are per-user, never cross-tenant, and a monotonic int makes batch flushing easier (see spec 15). UUIDs would add 16 bytes per row for no win.
   - `payload` is `jsonb` for forward flexibility (e.g., adding `dwell_ms` later for hover events without a migration). v1 payload contents documented in spec 15.
   - Two indexes — the desc one is for "recent events" queries (recommendations), the per-tmdb_id one is for "have I seen this movie before" lookups (dedupe in spec 15).
+
 - **RLS policies** (greppable names; uses Supabase's recommended `to authenticated` + `(select auth.uid())` form for performance per current docs):
   - `events_select_own` — `for select to authenticated using ((select auth.uid()) = user_id)`.
   - `events_insert_own` — `for insert to authenticated with check ((select auth.uid()) = user_id)`.
@@ -72,7 +75,7 @@ Land the second migration: an append-only `events` table that records every per-
 ## Success Criteria
 
 1. `0002_events.sql` is committed; running migrations from scratch creates the enum, the table, the two indexes, the two policies, the two check constraints.
-2. RLS enforced as designed: signed-in user A can read/insert own rows; cannot read B's; cannot update or delete *any* events; cannot insert rows with `user_id != auth.uid()`.
+2. RLS enforced as designed: signed-in user A can read/insert own rows; cannot read B's; cannot update or delete _any_ events; cannot insert rows with `user_id != auth.uid()`.
 3. The `event_kind` enum has exactly 4 values: `tile_click`, `hover_start`, `trailer_play`, `trailer_complete`.
 4. `pg_column_size(payload) >= 4096` insert is rejected with a check-constraint error.
 5. `tmdb_id <= 0` insert is rejected.
@@ -84,16 +87,20 @@ Land the second migration: an append-only `events` table that records every per-
 ## Agents & Skills
 
 **Agents (mandatory invocation):**
+
 - `test-writer` — runs at step 4 for the seven RLS / constraint tests. Validates parameterized cases over policy + operation × authorized/unauthorized.
 
 **Skills (consulted by the agents during this spec):**
+
 - **`.claude/skills/supabase-postgres-best-practices/SKILL.md`** — RLS phrasing, append-only patterns (no UPDATE/DELETE policy), check-constraint guidance, index strategy. Mandatory read.
 - **`.claude/skills/supabase/SKILL.md`** — Edge-Function service-role exception pattern (this spec doesn't use it directly, but downstream specs 17 + 19 do; keeping the cross-reference here).
 
 **MCPs available during this spec:**
+
 - **Supabase MCP** — `apply_migration` for `0002_events.sql`; `list_tables` + `execute_sql` for the seven RLS / constraint / cascade tests in step 4.
 
 **Notes:**
+
 - No `fsd-architect` invocation; only the protected `src/shared/types/supabase.js` is touched (regenerated).
 - No `prompt-engineer`.
 - The migration filename `0002_events.sql` is set as immutable by `ai-workflow-rules.md` §"Protected files".

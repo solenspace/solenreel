@@ -2,23 +2,23 @@
 
 ## Stack
 
-| Layer | Tech | Notes |
-|---|---|---|
-| Framework | React 19 | function components only |
-| Build | Vite 6 | dev server + production build |
-| Language | JavaScript + JSDoc | `// @ts-check` at file head; `tsconfig.json` with `checkJs: true` for editor diagnostics |
-| Styling | Tailwind v4 | design tokens as CSS variables (see `ui-context.md`) |
-| Routing | React Router v7 | code-split routes via `lazy` + `Suspense` |
-| Animation | Framer Motion v11 | reserved for transitions; not for trailer autoplay |
-| Trailer | `react-player` v2 | YouTube embed; muted by default per browser autoplay policy |
-| State (UI/auth) | Redux Toolkit v2 | thin: auth flag + UI prefs only |
-| State (server) | TanStack Query v5 | every server fetch goes through it |
-| HTTP | axios v1 | wrapped in `src/shared/api/*` clients only |
-| Auth + DB | Supabase | Postgres + Auth + Edge Functions; Firebase fully removed during import |
-| Movie data | TMDB API v3 | client-side calls, deduped via TanStack Query |
-| AI | OpenRouter free tier | single model (e.g. `openai/gpt-oss-20b:free`), called only from Edge Functions |
-| Hosting (web) | Vercel free tier (or Netlify equivalent) | static build of Vite output |
-| Hosting (functions) | Supabase Edge Functions | Deno runtime |
+| Layer               | Tech                                     | Notes                                                                                    |
+| ------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Framework           | React 19                                 | function components only                                                                 |
+| Build               | Vite 6                                   | dev server + production build                                                            |
+| Language            | JavaScript + JSDoc                       | `// @ts-check` at file head; `tsconfig.json` with `checkJs: true` for editor diagnostics |
+| Styling             | Tailwind v4                              | design tokens as CSS variables (see `ui-context.md`)                                     |
+| Routing             | React Router v7                          | code-split routes via `lazy` + `Suspense`                                                |
+| Animation           | Framer Motion v11                        | reserved for transitions; not for trailer autoplay                                       |
+| Trailer             | `react-player` v2                        | YouTube embed; muted by default per browser autoplay policy                              |
+| State (UI/auth)     | Redux Toolkit v2                         | thin: auth flag + UI prefs only                                                          |
+| State (server)      | TanStack Query v5                        | every server fetch goes through it                                                       |
+| HTTP                | axios v1                                 | wrapped in `src/shared/api/*` clients only                                               |
+| Auth + DB           | Supabase                                 | Postgres + Auth + Edge Functions; Firebase fully removed during import                   |
+| Movie data          | TMDB API v3                              | client-side calls, deduped via TanStack Query                                            |
+| AI                  | OpenRouter free tier                     | single model (e.g. `openai/gpt-oss-20b:free`), called only from Edge Functions           |
+| Hosting (web)       | Vercel free tier (or Netlify equivalent) | static build of Vite output                                                              |
+| Hosting (functions) | Supabase Edge Functions                  | Deno runtime                                                                             |
 
 ## Data flow
 

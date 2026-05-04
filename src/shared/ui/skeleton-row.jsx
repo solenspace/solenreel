@@ -1,12 +1,13 @@
+// @ts-check
 const SkeletonRow = () => {
   return (
-    <div className="px-4 md:px-12 my-6">
-      <div className="h-6 w-48 bg-bg-elevated rounded mb-4 animate-pulse" />
+    <div className="my-6 px-4 md:px-12">
+      <div className="bg-bg-elevated mb-4 h-6 w-48 animate-pulse rounded" />
       <div className="flex gap-2 overflow-hidden">
         {Array.from({ length: 8 }).map((_, i) => (
           <div
             key={i}
-            className="flex-shrink-0 w-[200px] h-[300px] bg-bg-elevated rounded-md animate-pulse"
+            className="bg-bg-elevated h-[300px] w-[200px] flex-shrink-0 animate-pulse rounded-md"
             style={{ animationDelay: `${i * 100}ms` }}
           />
         ))}

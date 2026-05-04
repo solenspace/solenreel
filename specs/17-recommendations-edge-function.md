@@ -15,19 +15,20 @@ Stand up `supabase/functions/recommendations/`, an Edge Function that reads a us
 
 ## Design Decisions
 
-- **Runtime**: Deno (Supabase Edge Functions). TypeScript files (`index.ts` + `schema.ts`); we accept TS *here* because the runtime is Deno and the `.ts` files don't ship to the client. Reel's "JS + JSDoc only" rule applies to the `src/` browser bundle, not to Edge Functions.
+- **Runtime**: Deno (Supabase Edge Functions). TypeScript files (`index.ts` + `schema.ts`); we accept TS _here_ because the runtime is Deno and the `.ts` files don't ship to the client. Reel's "JS + JSDoc only" rule applies to the `src/` browser bundle, not to Edge Functions.
 - **Endpoint**: `POST /functions/v1/recommendations`. No body; the user is identified by the JWT `Authorization: Bearer <supabase_jwt>` header. Method-restricted: `GET` returns 405.
 - **Auth**: the function derives the user via the canonical Supabase pattern — forward the `Authorization` header to a new `createClient` instance, then call `supabase.auth.getUser()` to obtain `{ user }`:
-    ```ts
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } },
-    );
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (!user || error) return new Response('unauthorized', { status: 401 });
-    const userId = user.id;
-    ```
+  ```ts
+  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
+    global: { headers: { Authorization: req.headers.get('Authorization')! } },
+  });
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+  if (!user || error) return new Response('unauthorized', { status: 401 });
+  const userId = user.id;
+  ```
   Service-role key is **only** used to write the result row to `recommendations` (RLS-bypassing path); reading events uses the user's JWT (RLS-enforcing path).
 - **Algorithm (content-based, deterministic)**:
   1. Fetch the user's last 50 `events` (any kind) ordered desc by `created_at`. Drop events older than 90 days.
@@ -38,13 +39,13 @@ Stand up `supabase/functions/recommendations/`, an Edge Function that reads a us
   6. Sort desc, take top 20.
   7. Output: `{ tmdb_id, score, reason: null }[]`.
 - **Output schema** (declared in `schema.ts` and validated before returning):
-    ```ts
-    type Output = {
-      items: Array<{ tmdb_id: number; score: number; reason: string | null }>;
-      computed_from_event_count: number;
-      cold_start: boolean;
-    };
-    ```
+  ```ts
+  type Output = {
+    items: Array<{ tmdb_id: number; score: number; reason: string | null }>;
+    computed_from_event_count: number;
+    cold_start: boolean;
+  };
+  ```
 - **Cold-start invariant** (matches `architecture.md` §"Invariants" 6): when `cold_start === true`, items are TMDB popular; the UI renders without the "For You" badge. The function output makes this explicit so the UI doesn't have to re-derive.
 - **Write-then-return**: after computing, the function `upsert`s into `recommendations` (via service role) before returning. This keeps the table as a fresh cache; the UI in spec 18 reads from the table on subsequent loads instead of re-invoking the function on every page view.
 - **Single TMDB key shared with the browser**: the function reads `TMDB_API_KEY` from the function's env (set in Supabase dashboard). It's the same key the browser uses; server-side use is purely for batching, not secret-keeping.
@@ -73,16 +74,16 @@ Stand up `supabase/functions/recommendations/`, an Edge Function that reads a us
    - Output schema validation: every returned response matches the declared shape.
    - Idempotency: two calls within 60 s return identical `items` arrays (ordering and ids).
 5. Add a smoke client at `src/entities/recommendation/use-recommendations.js`:
-    ```js
-    /** @returns {ReturnType<typeof useQuery<Recommendation>>} */
-    export function useRecommendations() {
-      return useQuery({
-        queryKey: ['recommendations'],
-        queryFn: () => supabase.functions.invoke('recommendations'),
-        staleTime: 5 * 60_000,
-      });
-    }
-    ```
+   ```js
+   /** @returns {ReturnType<typeof useQuery<Recommendation>>} */
+   export function useRecommendations() {
+     return useQuery({
+       queryKey: ['recommendations'],
+       queryFn: () => supabase.functions.invoke('recommendations'),
+       staleTime: 5 * 60_000,
+     });
+   }
+   ```
    This is reading-side; the UI consumes it in spec 18. Add a smoke test against a mocked invoke.
 6. Deploy locally for testing: `pnpx supabase functions serve recommendations`. Manual smoke: hit it with an authenticated request, verify the response body and the row in `recommendations`.
 7. Run all gates. Commit as `feat: recommendations Edge Function (content-based + cold-start fallback)`.
@@ -103,9 +104,11 @@ Stand up `supabase/functions/recommendations/`, an Edge Function that reads a us
 ## Agents & Skills
 
 **Agents (mandatory invocation):**
+
 - `test-writer` — runs at step 4 for the Deno test suite. Validates cold-start, warm-start, auth-failure, schema-validation, and idempotency cases.
 
 **Skills (consulted by the agents during this spec):**
+
 - **`.claude/skills/supabase/SKILL.md`** — authoritative for the Edge Function auth pattern (forward `Authorization` header → `createClient` → `auth.getUser()`), service-role write path, function deploy command. Mandatory read.
 - **`.claude/skills/supabase-postgres-best-practices/SKILL.md`** — informs the events aggregation query (`select kind, tmdb_id, ... where user_id = $1 order by created_at desc limit 50`).
 - `.claude/skills/vercel-react-best-practices/rules/async-parallel.md` — `Promise.all`-batched TMDB fetches (top 5 details + similar).
@@ -113,8 +116,10 @@ Stand up `supabase/functions/recommendations/`, an Edge Function that reads a us
 - `.claude/skills/vercel-react-best-practices/rules/server-cache-lru.md` — per-invocation in-memory cache.
 
 **MCPs available during this spec:**
+
 - **Supabase MCP** — `deploy_edge_function recommendations`, `list_edge_functions`, and `execute_sql` for inspecting the upserted `recommendations` row after a test invocation.
 
 **Notes:**
+
 - `prompt-engineer` is **not** invoked here: this function does not call an LLM. The JSON-schema discipline is symmetric with spec 19 but the prompt-engineer agent's domain is LLM prompts, which this spec lacks.
 - `fsd-architect` does not gate Edge Functions (different layer model); architecture review for this spec is the schema-validation discipline + the auth-pattern correctness, both informed by the supabase skill above.

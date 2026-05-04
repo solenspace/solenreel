@@ -1,5 +1,17 @@
+// @ts-check
 import ReactPlayer from 'react-player/youtube';
 
+/**
+ * @param {{
+ *   videoKey: string | null | undefined,
+ *   playing?: boolean,
+ *   muted?: boolean,
+ *   onEnded?: () => void,
+ *   onReady?: () => void,
+ *   className?: string,
+ *   style?: React.CSSProperties,
+ * }} props
+ */
 const TrailerPlayer = ({
   videoKey,
   playing = false,
@@ -22,8 +34,14 @@ const TrailerPlayer = ({
         onReady={onReady}
         width="100%"
         height="100%"
-        style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%) scale(1.3)' }}
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%) scale(1.3)',
+        }}
         config={{
+          // @ts-expect-error react-player v2 YouTubeConfig is missing the `youtube` provider key (v3 fixes this; deferred to v1.1)
           youtube: {
             playerVars: {
               autoplay: playing ? 1 : 0,

@@ -18,20 +18,21 @@ Wire the single search bar to operate in two modes — `literal` (TMDB title que
 - **Component**: `src/features/search-bar/search-bar.jsx`. Mounted into the header slot reserved by spec 08.
 - **State**: a small Redux slice (`src/features/search-bar/slice.js`) holds `{ query: string, mode: 'literal' | 'intent', userPinned: boolean }`. The slice is small — Redux fits because it's the same store the rest of the app uses. `userPinned: true` after a manual `Tab` toggle freezes auto-detection until the user clears the bar.
 - **Detection heuristic** at `src/shared/lib/intent-mode.js`:
-    ```js
-    /**
-     * @param {string} text
-     * @returns {'literal' | 'intent'}
-     */
-    export function detectMode(text) {
-      const tokens = text.trim().split(/\s+/).filter(Boolean);
-      if (tokens.length <= 3) return 'literal';
-      const moodyMarker = /\b(want|feel|need|something|like|kinda|mood|vibe|vibes|sad|happy|melancholy|cozy|slow|fast|funny|scary|hopeful|romantic|dark|light|tired)\b/i;
-      if (moodyMarker.test(text)) return 'intent';
-      // 4+ words without moody marker → still literal (probably a long title)
-      return 'literal';
-    }
-    ```
+  ```js
+  /**
+   * @param {string} text
+   * @returns {'literal' | 'intent'}
+   */
+  export function detectMode(text) {
+    const tokens = text.trim().split(/\s+/).filter(Boolean);
+    if (tokens.length <= 3) return 'literal';
+    const moodyMarker =
+      /\b(want|feel|need|something|like|kinda|mood|vibe|vibes|sad|happy|melancholy|cozy|slow|fast|funny|scary|hopeful|romantic|dark|light|tired)\b/i;
+    if (moodyMarker.test(text)) return 'intent';
+    // 4+ words without moody marker → still literal (probably a long title)
+    return 'literal';
+  }
+  ```
   Heuristic is intentionally simple and corrigible. The user can always override.
 - **Auto-detect timing**: re-evaluates mode on every keystroke (debounced 200 ms via `useDebounce` from `src/shared/lib/use-debounce.js`). If `userPinned`, do not re-evaluate.
 - **`Tab` toggle**: pressing Tab while focus is in the input flips mode and sets `userPinned: true`. Tab is intercepted (`event.preventDefault()`) only when the input is focused.
@@ -87,15 +88,18 @@ Wire the single search bar to operate in two modes — `literal` (TMDB title que
 ## Agents & Skills
 
 **Agents (mandatory invocation):**
+
 - `fsd-architect` — verifies the search-bar feature lives in `features/search-bar/`, the slice integrates into `src/app/store.js`, and the heuristic at `src/shared/lib/intent-mode.js` is reachable from any layer.
 - `test-writer` — runs at step 7 for `intent-mode.test.js` (parameterized over 8+ phrases) and `search-bar.test.jsx` (Tab toggle, `/`, `Esc`, Enter routing).
 
 **Skills (consulted by the agents during this spec):**
+
 - **`.claude/skills/vercel-composition-patterns/rules/state-context-interface.md`** — informs the search-bar-ref-context shape (forwarding the input ref to global keyboard bindings).
 - `.claude/skills/vercel-composition-patterns/rules/state-decouple-implementation.md` — keeps the slice independent of the input element.
 - `.claude/skills/vercel-react-best-practices/rules/advanced-event-handler-refs.md` — Tab interception only when the input is focused.
 - `.claude/skills/web-design-guidelines/SKILL.md` — `/` shortcut convention, mode-indicator placement.
 
 **Notes:**
+
 - Intent-mode heuristic word list is tentative; revised in this spec's execution after manual smoke if false-positive/negative rate is high. Open question tracked in `progress-tracker.md`.
 - No `prompt-engineer` here (no LLM prompt is changed).

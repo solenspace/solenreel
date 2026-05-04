@@ -1,6 +1,5 @@
-import React from "react";
-
-const NetflixIcon = (props) => {
+// @ts-check
+const NetflixIcon = () => {
   return (
     <svg
       width="100"
@@ -17,12 +16,7 @@ const NetflixIcon = (props) => {
       </g>
       <defs>
         <clipPath id="clip0_541_1212">
-          <rect
-            width="100"
-            height="26.4706"
-            fill="white"
-            transform="translate(0 0.765625)"
-          />
+          <rect width="100" height="26.4706" fill="white" transform="translate(0 0.765625)" />
         </clipPath>
       </defs>
     </svg>

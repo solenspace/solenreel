@@ -1,3 +1,4 @@
+// @ts-check
 import { useState, useMemo } from 'react';
 import { useHomeRows, useTrending } from '@/entities/movie/use-movies';
 import Banner from '@/widgets/banner/banner';
@@ -6,10 +7,13 @@ import MovieRow from '@/widgets/movie-row/movie-row';
 import MovieModal from '@/features/movie-modal/movie-modal';
 import SkeletonBanner from '@/shared/ui/skeleton-banner';
 
+/** @typedef {import('@/shared/api/tmdb').Movie} Movie */
+
 const Home = () => {
   const { data: trending, isLoading: trendingLoading } = useTrending();
   const { rows } = useHomeRows();
-  const [selectedMovie, setSelectedMovie] = useState(null);
+  /** @type {[Movie | null, React.Dispatch<React.SetStateAction<Movie | null>>]} */
+  const [selectedMovie, setSelectedMovie] = useState(/** @type {Movie | null} */ (null));
 
   const featuredMovie = useMemo(() => {
     if (!trending?.length) return null;
@@ -25,7 +29,7 @@ const Home = () => {
       ) : (
         <Banner
           movie={featuredMovie}
-          onMoreInfo={(movie) => setSelectedMovie(movie)}
+          onMoreInfo={(/** @type {Movie} */ movie) => setSelectedMovie(movie)}
         />
       )}
 
@@ -37,17 +41,12 @@ const Home = () => {
             movies={row.data}
             isLoading={row.isLoading}
             isLargeRow={row.isLargeRow}
-            onMovieClick={(movie) => setSelectedMovie(movie)}
+            onMovieClick={(/** @type {Movie} */ movie) => setSelectedMovie(movie)}
           />
         ))}
       </div>
 
-      {selectedMovie && (
-        <MovieModal
-          movie={selectedMovie}
-          onClose={() => setSelectedMovie(null)}
-        />
-      )}
+      {selectedMovie && <MovieModal movie={selectedMovie} onClose={() => setSelectedMovie(null)} />}
     </div>
   );
 };

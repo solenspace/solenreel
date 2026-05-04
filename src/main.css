@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   --color-bg: #0a0a0a;
@@ -13,11 +13,11 @@
 @layer base {
   body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    @apply bg-bg text-ink overflow-x-hidden min-h-screen antialiased;
+    @apply bg-bg text-ink min-h-screen overflow-x-hidden antialiased;
   }
 
   * {
-    @apply p-0 m-0 box-border;
+    @apply m-0 box-border p-0;
   }
 
   li {
@@ -25,10 +25,15 @@
   }
 
   a {
-    @apply no-underline cursor-pointer;
+    @apply cursor-pointer no-underline;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply text-white;
   }
 
