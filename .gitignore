@@ -34,6 +34,14 @@ supabase/.branches/
 # Firebase (legacy from netflix-clone import; removed in spec 05)
 .firebase/
 
+# Playwright MCP smoke artifacts (Claude drives Chromium; these are scratch)
+.playwright-mcp/
+/login.png
+/welcome.png
+/home.png
+/profile.png
+/search.png
+
 # OS
 .DS_Store
 Thumbs.db

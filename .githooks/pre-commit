@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# reel — pre-commit hook
+# Runs eslint across the project. Fast for the current size; revisit if it
+# slows commits noticeably (then introduce lint-staged).
+
+set -e
+
+echo "pre-commit: pnpm lint"
+pnpm lint

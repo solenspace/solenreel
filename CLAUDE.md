@@ -71,3 +71,34 @@ in the context files, update the relevant file **before** continuing.
   `npx`, `supabase`, `vercel`, `gh`, plus read-only `git` ops. The `supabase`
   CLI complements the Supabase MCP for `init` / `link` / `functions serve`
   paths the MCP doesn't cover.
+
+## Git workflow (gitflow)
+
+Remote: **https://github.com/solenspace/solenreel.git** (origin).
+
+Two long-lived branches:
+
+- `main` — production. Only releases land here. Direct commits forbidden.
+- `development` — integration. Default target for feature PRs.
+
+**Before implementing any new feature or spec**, branch off `development`:
+
+```sh
+git checkout development && git pull
+git checkout -b feat/<spec-slug>     # or fix/, chore/, docs/, refactor/
+```
+
+Open the PR against `development` (`gh pr create --base development`). When
+`development` is release-ready, open a separate PR `development` → `main`.
+
+Commit messages must follow conventional-commits format
+(`<type>(<scope>)?: <subject>`). The `commit-msg` hook enforces this. Do not
+add `Co-Authored-By: Claude …` trailers — keep the log authored by the human
+operator.
+
+Hooks live in `.githooks/` and are activated by the `prepare` npm script
+(runs `git config core.hooksPath .githooks` after `pnpm install`):
+
+- `pre-commit` — runs `pnpm lint`.
+- `pre-push` — runs `pnpm lint && pnpm exec vite build`.
+- `commit-msg` — enforces conventional-commits format.

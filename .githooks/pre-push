@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# reel — pre-push hook
+# Lint + production build before sending commits to the remote. Catches
+# import-resolution failures and Tailwind/Vite config errors that lint
+# alone misses.
+
+set -e
+
+echo "pre-push: pnpm lint"
+pnpm lint
+
+echo "pre-push: vite build"
+pnpm exec vite build

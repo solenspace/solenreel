@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# reel — commit-msg hook
+# Enforce conventional commits: <type>(<scope>)?: <subject>
+# Allowed types: feat fix chore docs style refactor perf test build ci revert
+
+set -e
+
+MSG_FILE="$1"
+FIRST_LINE=$(head -n 1 "$MSG_FILE")
+
+# Skip merge / revert / fixup commits
+if echo "$FIRST_LINE" | grep -qE '^(Merge |Revert |fixup!|squash!|amend!)'; then
+  exit 0
+fi
+
+PATTERN='^(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert)(\([a-z0-9._/-]+\))?!?: .{3,}'
+
+if ! echo "$FIRST_LINE" | grep -qE "$PATTERN"; then
+  cat >&2 <<EOF
+commit-msg: rejected — first line does not match conventional commits.
+
+  got:      "$FIRST_LINE"
+  expected: <type>(<scope>)?: <subject>
+  types:    feat fix chore docs style refactor perf test build ci revert
+
+Examples:
+  feat(search): add intent-mode toggle
+  fix: resolve trailer fallback poster
+  refactor: prune Netflix branding & restructure src/ into FSD layers
+EOF
+  exit 1
+fi
+
+# Reject Claude co-author trailers (per project policy).
+if grep -qE '^Co-[Aa]uthored-[Bb]y:.*[Cc]laude' "$MSG_FILE"; then
+  cat >&2 <<EOF
+commit-msg: rejected — drop the "Co-Authored-By: Claude …" trailer.
+
+Repo policy: commits are authored by the human operator only. Re-run with
+the trailer removed.
+EOF
+  exit 1
+fi
