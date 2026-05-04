@@ -22,13 +22,14 @@ Ship reel. After this spec, the app is built for production with env-var validat
   - Sourcemaps off in production (`build.sourcemap: false`). Sourcemaps stay on for the dev/preview build (`build.sourcemap: 'hidden'` for preview if useful for staging triage).
   - Bundle analysis: run `vite build --mode analyze` (custom mode that emits a stats file) once; manual sanity check that no surprise large dep snuck in. Target: total JS gzipped < 250 KB on initial load (Vite's manualChunks already split vendor/firebase — and firebase is gone post-spec-05).
 - **CI**: a single GitHub Actions workflow at `.github/workflows/ci.yml` (replaces the netflix-clone's deleted `firebase-deploy.yml`). On push to `main`: runs `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`. Optional matrix later; v1 ships a single Node 22 job. No deploy from CI in v1 — deploys are triggered manually.
-- **Smoke tests against prod**: a tiny smoke suite at `tests/smoke/` (top-level, not under `src/` since it runs against deployed URL, not the source tree). Uses Playwright (installed only as a devDep used in this spec; not pulled into the main bundle):
-  - Open home → wait for first row → assert ≥ 1 tile rendered.
-  - Hover a tile → assert trailer overlay mounts.
-  - Click a tile → assert `/movie/:id` page loads with player.
-  - Sign in with a test account (creds via env) → home re-loads → For You row appears.
-  - Type intent prompt → submit → assert at least 1 reasoning line renders.
-  - Each step has a 10 s timeout; smoke completes in ≤ 60 s end-to-end.
+- **Smoke tests against prod — driven by Playwright MCP, no test files written**: instead of authoring a Playwright test suite, Claude drives a real Chromium session via the Playwright MCP server (already installed in `.mcp.json`). The smoke procedure is a documented checklist in `tests/smoke/PROCEDURE.md` (the only file under `tests/`); the agent executes it on demand.
+  - `browser_navigate(<deployed-url>)` → home → `browser_snapshot` confirms ≥ 1 tile in the accessibility tree.
+  - `browser_hover(<first-tile>)` → `browser_snapshot` confirms a trailer overlay element appears.
+  - `browser_click(<first-tile>)` → `/movie/:id` → `browser_snapshot` confirms the YouTube player container.
+  - Sign in via `browser_type` (creds from env: `SMOKE_TEST_EMAIL` / `SMOKE_TEST_PASSWORD`) → `browser_snapshot` confirms the For You row badge.
+  - `browser_type` an intent prompt → submit → `browser_snapshot` confirms at least 1 reasoning line.
+  - Each step has a 10 s timeout enforced by the MCP. Whole flow ≤ 60 s.
+- **`@playwright/test` is NOT a devDep.** Playwright runs *inside* the MCP server process; the project bundle never imports it. This is why the MCP-driven approach is preferred: zero added dependency surface in `package.json`.
 - **README**: a fresh `README.md` for reel — what it is, who it's for, how to run, attribution (TMDB + Supabase + OpenRouter + originating netflix-clone reference + `vercel-labs/agent-skills` for skills), license note. The `NETFLIX-CLONE-README.md` file was already deleted in the pre-execution cleanup pass; attribution lives here in reel's new README.
 - **Domain / branding**: out of scope; reel deploys to the default `*.vercel.app` URL in v1. Custom domain is a v1.1 task.
 - **Final cleanup pass**:
@@ -55,11 +56,11 @@ Ship reel. After this spec, the app is built for production with env-var validat
    And a documented Netlify fallback (`netlify.toml`).
 3. Create `.github/workflows/ci.yml` running typecheck/lint/test/build on push.
 4. Author `README.md` for reel (replacing the netflix-clone's). Sections: what it is, run-locally (`pnpm install`, `pnpm dev`, env setup pointer), tech stack summary, deploy notes, license.
-5. Add `@playwright/test` as a devDep (the test runner package; `playwright` alone is the browser bindings); create `tests/smoke/reel.spec.ts`. Smoke runs locally via `pnpm test:smoke -- --base-url <url>`. Document in README.
+5. Author `tests/smoke/PROCEDURE.md` — the documented 5-step Playwright-MCP smoke procedure (the agent reads this and executes via the MCP). Reference it from README.
 6. Deploy:
    - **Vercel**: import the repo via the Vercel dashboard, set the four env vars (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_TMDB_API_KEY`, optional feature flags). First deploy is automatic on the first push to `main` after import.
    - **Supabase Edge Functions**: `pnpx supabase functions deploy recommendations` and `pnpx supabase functions deploy intent-search`. Set `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, `TMDB_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY` in the Supabase function env (dashboard).
-7. Run `pnpm test:smoke -- --base-url https://<deployed-url>`. Iterate on any failure.
+7. Run the smoke flow via the Playwright MCP (Claude executes the procedure in `tests/smoke/PROCEDURE.md` against the deployed URL). Iterate on any failure.
 8. Final `fsd-architect` audit pass on the full tree. Address any reported violations.
 9. Final cleanup: delete legacy files identified in audit; verify dev-only routes are not in the production bundle (`grep "_dev" dist/` → 0 hits in JS).
 10. Update `context/progress-tracker.md`: mark v1 shipped, log the deployed URL, log the chosen OpenRouter model and Supabase project ref.
@@ -72,7 +73,7 @@ Ship reel. After this spec, the app is built for production with env-var validat
 3. Deployed URL serves the SPA; deep links (e.g. `https://<url>/movie/550`) load correctly via the rewrite.
 4. Both Edge Functions return 200 for valid requests against the deployed Supabase project: smoke `curl` for `recommendations` and `intent-search` confirms.
 5. CI workflow passes on the latest commit; failing typecheck/lint/test/build blocks merge.
-6. Playwright smoke against prod completes in < 60 s and all 5 steps pass.
+6. Playwright-MCP smoke against prod completes in < 60 s; all 5 steps pass (verified by Claude calling `browser_*` tools and reading the accessibility snapshots).
 7. `grep -ri "netflix" src/` returns 0 (the `NETFLIX-CLONE-README.md` file no longer exists; remaining acceptable hits are only in migration comments referring to the source repo).
 8. `grep -ri "openrouter" src/` returns 0 (the key never reaches the browser; verified one last time).
 9. `grep -r "console\\.log" src/` returns 0 (cleanups during dev shouldn't leave logs).
@@ -86,9 +87,16 @@ Ship reel. After this spec, the app is built for production with env-var validat
 - `test-writer` — drives the Playwright smoke spec (step 5). Validates the 5-step end-to-end flow uses behavior-based selectors (no implementation coupling).
 
 **Skills (consulted by the agents during this spec):**
-- `.claude/skills/vercel-react-best-practices/rules/bundle-defer-third-party.md` — informs bundle-size targets and the analyze-mode pass.
+- **`.claude/skills/playwright-best-practices/SKILL.md`** — drives the agent's use of Playwright MCP correctly: locator-strategy hierarchy (role > label > text > test-id), accessibility snapshots over screenshots, no implementation coupling. Mandatory read for the smoke step.
+- **`.claude/skills/supabase/SKILL.md`** — final deploy: `supabase functions deploy` for both Edge Functions; `supabase secrets list` to confirm prod secrets.
+- `.claude/skills/vercel-react-best-practices/rules/bundle-defer-third-party.md` — bundle-size targets.
 - `.claude/skills/vercel-react-best-practices/rules/bundle-barrel-imports.md` — final pass to ensure no barrel imports leaked in.
+
+**MCPs available during this spec:**
+- **Playwright MCP** — drives the entire smoke pass (`browser_navigate`, `browser_click`, `browser_type`, `browser_snapshot`, `browser_hover`).
+- **Supabase MCP** — `deploy_edge_function` for both functions, `list_edge_functions` to confirm deploys, `get_logs` for any deploy-time error triage.
 
 **Notes:**
 - v1 model `openai/gpt-oss-20b:free` set in `OPENROUTER_MODEL` Supabase secret.
 - No `prompt-engineer` here (no prompt change in this spec).
+- `@playwright/test` is intentionally NOT in `package.json`; the smoke runs through the MCP, not through a written test suite.

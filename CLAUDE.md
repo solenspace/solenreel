@@ -43,9 +43,22 @@ in the context files, update the relevant file **before** continuing.
   (131K context, $0/M tokens, structured outputs supported). No fallback. Key
   lives only inside Supabase Edge Functions.
 - **Skills live canonically in `.agents/skills/<name>/`**, with symlinks at
-  `.claude/skills/<name>` → `../../.agents/skills/<name>`. Three skills are
+  `.claude/skills/<name>` → `../../.agents/skills/<name>`. Six skills are
   installed: `vercel-composition-patterns`, `vercel-react-best-practices`,
-  `web-design-guidelines`. `skills-lock.json` is the durable record.
+  `web-design-guidelines`, `supabase`, `supabase-postgres-best-practices`,
+  `playwright-best-practices`. All six are validated entries in the
+  https://skills.sh registry. `skills-lock.json` is the durable record.
+  Reinstall: `pnpx skills experimental_install`.
+- **Two MCPs** are configured at project scope in `.mcp.json`:
+  - **`playwright`** (stdio, `npx -y @playwright/mcp@latest`) — Claude drives
+    a real Chromium for visual smoke and live UI verification. **No
+    `@playwright/test` is installed in `package.json`**; the MCP is the test
+    runner. Spec 23's smoke procedure lives in `tests/smoke/PROCEDURE.md` and
+    Claude executes it via `browser_*` tools.
+  - **`supabase`** (HTTP, `https://mcp.supabase.com/mcp`) — Claude can apply
+    migrations, deploy Edge Functions, run RLS test queries, and inspect
+    logs without a human in the loop. First-use triggers dynamic client
+    registration (browser auth flow); subsequent calls reuse the token.
 - **Three project-local agents** at `.claude/agents/`: `fsd-architect`,
   `test-writer`, `prompt-engineer`. No invented agents — new ones must be
   validated against an external registry first.
@@ -54,3 +67,7 @@ in the context files, update the relevant file **before** continuing.
   gates green before the next begins.
 - **`react-player/youtube`** is the import path used by the trailer player —
   works in v2.x.
+- **CLI permissions** (`.claude/settings.json` allowlist): `pnpm`, `pnpx`,
+  `npx`, `supabase`, `vercel`, `gh`, plus read-only `git` ops. The `supabase`
+  CLI complements the Supabase MCP for `init` / `link` / `functions serve`
+  paths the MCP doesn't cover.

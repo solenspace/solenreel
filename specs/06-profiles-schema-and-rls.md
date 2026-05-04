@@ -86,7 +86,11 @@ Land the first Supabase migration: a `profiles` table that 1:1 mirrors `auth.use
 - `test-writer` — drives the RLS test suite at step 6. Each policy gets at least one positive case (signed-in owner can do X) and one negative case (signed-in non-owner blocked, anon blocked). Parameterized over policy names.
 
 **Skills (consulted by the agents during this spec):**
-- *(no project-level skill is directly relevant; this is a SQL-only spec. The test-writer agent's source-of-truth is its own definition + `code-standards.md`.)*
+- **`.claude/skills/supabase-postgres-best-practices/SKILL.md`** — authoritative source for the RLS phrasing (`to authenticated`, `(select auth.uid())`), security-definer triggers, and migration file conventions used here. Mandatory read.
+- **`.claude/skills/supabase/SKILL.md`** — informs the auth.users → public.profiles relationship and signup-trigger pattern.
+
+**MCPs available during this spec:**
+- **Supabase MCP** — Claude applies the migration via `apply_migration`, verifies tables/policies/triggers via `list_tables` + `execute_sql`, and runs the RLS test queries directly without leaving the IDE.
 
 **Notes:**
 - No `fsd-architect` invocation (no source-tree changes outside the protected `src/shared/types/supabase.js` regen).

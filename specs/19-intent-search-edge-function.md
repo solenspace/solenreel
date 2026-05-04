@@ -127,9 +127,13 @@ Stand up `supabase/functions/intent-search/`, an Edge Function that takes a natu
 - `test-writer` — runs at step 6 for the eight Deno test cases (empty prompt, oversize, hallucination 0%/25%/87%, 429, 5xx, schema violation).
 
 **Skills (consulted by the agents during this spec):**
-- **User-level `claude-api`** skill (auto-loaded by the harness when the Claude/Anthropic SDK is in use; here it informs general LLM-integration patterns: prompt caching, structured outputs, defense-in-depth schema validation).
+- **`.claude/skills/supabase/SKILL.md`** — Edge Function auth pattern, secret access via `Deno.env.get()`, function deploy. Mandatory read.
+- **User-level `claude-api`** skill (auto-loaded by the harness when an Anthropic SDK is in use; here it informs general LLM-integration patterns even though we use OpenRouter — prompt caching, structured outputs, defense-in-depth schema validation, determinism settings).
 - `.claude/skills/vercel-react-best-practices/rules/async-cheap-condition-before-await.md` — keeps body validation before any LLM call.
 - `.claude/skills/vercel-react-best-practices/rules/server-cache-lru.md` — informs the per-invocation in-memory cache (5-minute TTL).
+
+**MCPs available during this spec:**
+- **Supabase MCP** — `deploy_edge_function intent-search`, set the `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` secrets, inspect function logs via `get_logs`.
 
 **Notes:**
 - This is the **only** spec where the OpenRouter API key is referenced. `OPENROUTER_API_KEY` reaching `src/` is a defect (success criteria 7).

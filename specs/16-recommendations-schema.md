@@ -87,7 +87,11 @@ Land the third migration: a `recommendations` table that caches each user's most
 - `test-writer` — runs at step 5 for the seven RLS / constraint / cascade tests.
 
 **Skills (consulted by the agents during this spec):**
-- *(no project-level skill is directly relevant; SQL-only spec.)*
+- **`.claude/skills/supabase-postgres-best-practices/SKILL.md`** — RLS phrasing for read-only-by-client + service-role-write tables, jsonb constraint patterns, cascade conventions.
+- **`.claude/skills/supabase/SKILL.md`** — service-role bypass rules for Edge Function writes.
+
+**MCPs available during this spec:**
+- **Supabase MCP** — `apply_migration` for `0003_recommendations.sql`; `list_tables` and `execute_sql` for the seven RLS / constraint tests in step 5.
 
 **Notes:**
 - No `fsd-architect` (only the protected types file is touched, regenerated).

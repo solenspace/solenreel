@@ -106,10 +106,15 @@ Stand up `supabase/functions/recommendations/`, an Edge Function that reads a us
 - `test-writer` — runs at step 4 for the Deno test suite. Validates cold-start, warm-start, auth-failure, schema-validation, and idempotency cases.
 
 **Skills (consulted by the agents during this spec):**
-- `.claude/skills/vercel-react-best-practices/rules/async-parallel.md` — informs `Promise.all`-batched TMDB fetches (top 5 details + similar).
-- `.claude/skills/vercel-react-best-practices/rules/async-cheap-condition-before-await.md` — keeps the cold-start check before any expensive TMDB call.
-- `.claude/skills/vercel-react-best-practices/rules/server-cache-lru.md` — informs the per-invocation in-memory cache.
+- **`.claude/skills/supabase/SKILL.md`** — authoritative for the Edge Function auth pattern (forward `Authorization` header → `createClient` → `auth.getUser()`), service-role write path, function deploy command. Mandatory read.
+- **`.claude/skills/supabase-postgres-best-practices/SKILL.md`** — informs the events aggregation query (`select kind, tmdb_id, ... where user_id = $1 order by created_at desc limit 50`).
+- `.claude/skills/vercel-react-best-practices/rules/async-parallel.md` — `Promise.all`-batched TMDB fetches (top 5 details + similar).
+- `.claude/skills/vercel-react-best-practices/rules/async-cheap-condition-before-await.md` — cold-start check before any expensive TMDB call.
+- `.claude/skills/vercel-react-best-practices/rules/server-cache-lru.md` — per-invocation in-memory cache.
+
+**MCPs available during this spec:**
+- **Supabase MCP** — `deploy_edge_function recommendations`, `list_edge_functions`, and `execute_sql` for inspecting the upserted `recommendations` row after a test invocation.
 
 **Notes:**
-- `prompt-engineer` is **not** invoked here even though the plan referenced it: this function does not call an LLM. The JSON-schema discipline is symmetric with spec 19 but the prompt-engineer agent's domain is LLM prompts, which this spec lacks.
-- `fsd-architect` does not gate Edge Functions (different layer model); architecture review for this spec is the schema-validation discipline + the auth-pattern correctness.
+- `prompt-engineer` is **not** invoked here: this function does not call an LLM. The JSON-schema discipline is symmetric with spec 19 but the prompt-engineer agent's domain is LLM prompts, which this spec lacks.
+- `fsd-architect` does not gate Edge Functions (different layer model); architecture review for this spec is the schema-validation discipline + the auth-pattern correctness, both informed by the supabase skill above.

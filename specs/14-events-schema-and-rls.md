@@ -87,7 +87,11 @@ Land the second migration: an append-only `events` table that records every per-
 - `test-writer` — runs at step 4 for the seven RLS / constraint tests. Validates parameterized cases over policy + operation × authorized/unauthorized.
 
 **Skills (consulted by the agents during this spec):**
-- *(no project-level skill is directly relevant; this is a SQL-only spec.)*
+- **`.claude/skills/supabase-postgres-best-practices/SKILL.md`** — RLS phrasing, append-only patterns (no UPDATE/DELETE policy), check-constraint guidance, index strategy. Mandatory read.
+- **`.claude/skills/supabase/SKILL.md`** — Edge-Function service-role exception pattern (this spec doesn't use it directly, but downstream specs 17 + 19 do; keeping the cross-reference here).
+
+**MCPs available during this spec:**
+- **Supabase MCP** — `apply_migration` for `0002_events.sql`; `list_tables` + `execute_sql` for the seven RLS / constraint / cascade tests in step 4.
 
 **Notes:**
 - No `fsd-architect` invocation; only the protected `src/shared/types/supabase.js` is touched (regenerated).
