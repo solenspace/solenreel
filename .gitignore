@@ -29,6 +29,9 @@ coverage/
 .env
 .env.local
 .env.*.local
+# Per-project policy: do not commit env templates either.
+.env.example
+.env.*.example
 
 # Supabase local dev
 supabase/.temp/
