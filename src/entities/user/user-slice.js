@@ -3,8 +3,8 @@ import { createSlice } from '@reduxjs/toolkit';
 import { signIn, signUp, signOut } from '@/entities/user/auth-actions';
 
 /**
- * @typedef {import('@/shared/types/supabase').Session} Session
- * @typedef {import('@/shared/types/supabase').AppAuthError} AppAuthError
+ * @typedef {import('@/shared/types/auth').Session} Session
+ * @typedef {import('@/shared/types/auth').AppAuthError} AppAuthError
  * @typedef {'idle' | 'loading' | 'authenticated' | 'unauthenticated'} AuthStatus
  *
  * @typedef {object} UserState

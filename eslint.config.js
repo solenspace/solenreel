@@ -55,6 +55,33 @@ const reelLocal = {
         };
       },
     },
+    'supabase-generated-check': {
+      meta: {
+        type: 'problem',
+        docs: {
+          description:
+            'Generated Supabase type files must keep `// GENERATED` on line 1; ' +
+            'hand edits are forbidden — run `pnpm types:gen` to regenerate.',
+        },
+        schema: [],
+      },
+      create(context) {
+        return {
+          Program(node) {
+            const src = context.sourceCode || context.getSourceCode();
+            const firstLine = src.getText().split('\n')[0];
+            if (!/^\/\/\s*GENERATED\b/.test(firstLine)) {
+              context.report({
+                node,
+                message:
+                  'This file is generated. Run `pnpm types:gen` to regenerate; ' +
+                  'hand edits are forbidden.',
+              });
+            }
+          },
+        };
+      },
+    },
   },
 };
 
@@ -208,6 +235,19 @@ export default [
     files: ['src/shared/api/supabase.js', 'src/shared/api/supabase.test.jsx'],
     rules: {
       'no-restricted-imports': 'off',
+    },
+  },
+
+  // Spec 06: the generated Supabase JSDoc shim must keep its `// GENERATED`
+  // marker on line 1. Manual edits trip the rule; `pnpm lint --max-warnings=0`
+  // then turns the warning into a build break. Regenerate with `pnpm types:gen`.
+  // (The sibling supabase-database.d.ts is protected by convention only —
+  // ESLint flat config doesn't lint .d.ts files without a TS parser.)
+  {
+    files: ['src/shared/types/supabase.js'],
+    plugins: { reel: reelLocal },
+    rules: {
+      'reel/supabase-generated-check': 'warn',
     },
   },
 ];

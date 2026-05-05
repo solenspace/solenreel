@@ -1,15 +1,16 @@
+// GENERATED — DO NOT EDIT. Run `pnpm types:gen` to regenerate.
 // @ts-check
 
 /**
- * @typedef {import('@supabase/supabase-js').SupabaseClient} SupabaseClient
- * @typedef {import('@supabase/supabase-js').Session} Session
- * @typedef {import('@supabase/supabase-js').User} User
- * @typedef {import('@supabase/supabase-js').AuthError} AuthError
+ * Project-wide DB-derived typedefs, generated from the live Postgres schema
+ * via `pnpx supabase gen types typescript --local`. The raw `Database` type
+ * lives in ./supabase-database.d.ts; this file exposes named JSDoc typedefs
+ * that the rest of the codebase imports from.
  *
- * @typedef {object} AppAuthError
- * @property {string} code
- * @property {string} message
- * @property {number} [status]
+ * @typedef {import('./supabase-database').Database} Database
+ * @typedef {Database['public']['Tables']['profiles']['Row']} Profile
+ * @typedef {Database['public']['Tables']['profiles']['Insert']} ProfileInsert
+ * @typedef {Database['public']['Tables']['profiles']['Update']} ProfileUpdate
  */
 
 export {};

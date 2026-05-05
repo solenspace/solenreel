@@ -3,8 +3,8 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { supabase } from '@/shared/api/supabase';
 
 /**
- * @typedef {import('@/shared/types/supabase').Session} Session
- * @typedef {import('@/shared/types/supabase').AppAuthError} AppAuthError
+ * @typedef {import('@/shared/types/auth').Session} Session
+ * @typedef {import('@/shared/types/auth').AppAuthError} AppAuthError
  * @typedef {{ email: string, password: string }} Credentials
  */
 
