@@ -7,6 +7,7 @@ import LoadingScreen from '@/shared/ui/loading-screen';
 
 const Home = lazy(() => import('@/app/pages/home'));
 const Search = lazy(() => import('@/app/pages/search'));
+const Movie = lazy(() => import('@/app/pages/movie'));
 const Profile = lazy(() => import('@/app/pages/profile'));
 const Login = lazy(() => import('@/app/pages/login'));
 const Welcome = lazy(() => import('@/app/pages/welcome'));
@@ -19,13 +20,15 @@ const withSuspense = (Component) => (
   </Suspense>
 );
 
-const router = createBrowserRouter([
+/** @type {import('react-router-dom').RouteObject[]} */
+export const routes = [
   {
     path: '/',
     element: <AppLayout />,
     children: [
       { index: true, element: withSuspense(Home) },
       { path: 'search', element: withSuspense(Search) },
+      { path: 'movie/:id', element: withSuspense(Movie) },
       { path: 'profile', element: withSuspense(Profile) },
     ],
   },
@@ -38,6 +41,8 @@ const router = createBrowserRouter([
     ],
   },
   ...(DevTokens ? [{ path: '/dev/tokens', element: withSuspense(DevTokens) }] : []),
-]);
+];
+
+const router = createBrowserRouter(routes);
 
 export default router;

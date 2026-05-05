@@ -3,7 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { selectAuthStatus, selectSession } from '@/entities/user/user-slice';
-import Navbar from '@/widgets/header/header';
+import Header from '@/widgets/header/header';
 import Footer from '@/widgets/footer/footer';
 import ErrorBoundary from '@/shared/ui/error-boundary';
 import LoadingScreen from '@/shared/ui/loading-screen';
@@ -22,7 +22,7 @@ const AppLayout = () => {
 
   return (
     <div className="bg-bg min-h-screen">
-      <Navbar />
+      <Header />
       <main>
         <ErrorBoundary>
           <Outlet />
