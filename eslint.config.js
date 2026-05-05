@@ -140,6 +140,19 @@ export default [
     rules: {
       'reel/require-ts-check': 'error',
       'import/no-restricted-paths': ['error', { zones: fsdZones }],
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@supabase/supabase-js',
+              message:
+                'Import the singleton `supabase` from @/shared/api/supabase instead. ' +
+                'Spec 04 invariant — only src/shared/api/supabase.js may touch this module directly.',
+            },
+          ],
+        },
+      ],
     },
   },
 
@@ -186,6 +199,15 @@ export default [
     rules: {
       'react-refresh/only-export-components': 'off',
       'import/no-restricted-paths': 'off',
+    },
+  },
+
+  // Spec 04 invariant: only the Supabase singleton (and its smoke test) may
+  // import `@supabase/supabase-js` directly. Every other importer is a defect.
+  {
+    files: ['src/shared/api/supabase.js', 'src/shared/api/supabase.test.jsx'],
+    rules: {
+      'no-restricted-imports': 'off',
     },
   },
 ];
