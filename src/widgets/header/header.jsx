@@ -1,12 +1,14 @@
 // @ts-check
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAppDispatch } from '@/shared/lib/use-app-dispatch';
 import { useScrolled } from '@/shared/lib/use-scrolled';
 import { NetflixIcon, SearchIcon, BellIcon, ArrowDownIcon } from '@/shared/ui/icons';
-import { auth } from '@/shared/api/firebase';
+import { signOut } from '@/entities/user/auth-actions';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar = () => {
+  const dispatch = useAppDispatch();
   const scrolled = useScrolled();
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -137,7 +139,7 @@ const Navbar = () => {
                 </Link>
                 <hr className="border-gray-700" />
                 <button
-                  onClick={() => auth.signOut()}
+                  onClick={() => dispatch(signOut())}
                   className="w-full bg-transparent px-4 py-3 text-left text-sm text-gray-300 transition-colors hover:bg-white/10"
                 >
                   Sign out of reel

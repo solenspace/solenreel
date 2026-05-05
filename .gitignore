@@ -39,9 +39,6 @@ supabase/.branches/
 # Edge Function secrets (consumed by `pnpx supabase secrets set --env-file ...`)
 supabase/.env.functions
 
-# Firebase (legacy from netflix-clone import; removed in spec 05)
-.firebase/
-
 # Playwright MCP smoke artifacts (Claude drives Chromium; these are scratch)
 .playwright-mcp/
 /login.png

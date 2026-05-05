@@ -1,24 +1,26 @@
 // @ts-check
 import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/shared/api/firebase';
+import { useAppDispatch } from '@/shared/lib/use-app-dispatch';
+import { signIn, signUp } from '@/entities/user/auth-actions';
 import { NetflixIcon } from '@/shared/ui/icons';
 import Button from '@/shared/ui/button';
 import Input from '@/shared/ui/input';
 
 /** @type {Record<string, string>} */
 const ERROR_MAP = {
-  'auth/wrong-password': 'Incorrect password.',
-  'auth/user-not-found': 'No account found with this email.',
-  'auth/invalid-credential': 'Invalid email or password.',
-  'auth/email-already-in-use': 'This email is already registered.',
-  'auth/invalid-email': 'Please enter a valid email address.',
-  'auth/weak-password': 'Password must be at least 6 characters.',
-  'auth/network-request-failed': 'No internet connection.',
+  invalid_credentials: 'Invalid email or password.',
+  email_not_confirmed: 'Please confirm your email before signing in.',
+  user_already_exists: 'This email is already registered.',
+  email_address_invalid: 'Please enter a valid email address.',
+  weak_password: 'Password is too weak. Use at least 6 characters.',
+  over_email_send_rate_limit: 'Too many attempts. Please wait a moment and try again.',
+  user_banned: 'This account has been disabled.',
+  signup_disabled: 'New sign-ups are temporarily disabled.',
 };
 
 const Login = () => {
+  const dispatch = useAppDispatch();
   /** @type {React.RefObject<HTMLInputElement | null>} */
   const emailRef = useRef(null);
   /** @type {React.RefObject<HTMLInputElement | null>} */
@@ -37,13 +39,13 @@ const Login = () => {
     const password = passwordRef.current?.value ?? '';
 
     try {
-      if (isSignUp) {
-        await createUserWithEmailAndPassword(auth, email, password);
-      } else {
-        await signInWithEmailAndPassword(auth, email, password);
-      }
+      const action = isSignUp ? signUp({ email, password }) : signIn({ email, password });
+      await dispatch(action).unwrap();
     } catch (err) {
-      const code = err instanceof Error && 'code' in err ? String(err.code) : '';
+      const code =
+        err && typeof err === 'object' && 'code' in err
+          ? String(/** @type {{ code: unknown }} */ (err).code)
+          : '';
       setError(ERROR_MAP[code] || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
