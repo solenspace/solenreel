@@ -42,7 +42,7 @@ const MovieRow = ({ title, movies, isLoading, isLargeRow = false, onMovieClick }
 
   return (
     <div className="group relative my-6 px-4 md:px-12">
-      <h2 className="mb-2 inline-flex cursor-pointer items-center gap-2 text-lg font-bold text-white transition-colors hover:text-gray-300 md:text-xl">
+      <h2 className="text-ink hover:text-ink-muted mb-2 inline-flex cursor-pointer items-center gap-2 text-lg font-bold transition-colors md:text-xl">
         {title}
         <span className="text-accent text-sm opacity-0 transition-opacity group-hover:opacity-100">
           Explore All ›
@@ -53,7 +53,7 @@ const MovieRow = ({ title, movies, isLoading, isLargeRow = false, onMovieClick }
         {showLeftArrow && (
           <button
             onClick={() => scroll('left')}
-            className="absolute top-0 bottom-0 left-0 z-20 flex w-12 items-center justify-center rounded-r-md bg-black/50 text-3xl text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-black/70"
+            className="bg-bg-overlay text-ink hover:bg-bg-elevated absolute top-0 bottom-0 left-0 z-20 flex w-12 items-center justify-center rounded-r-md text-3xl opacity-0 transition-opacity group-hover:opacity-100"
           >
             ‹
           </button>
@@ -78,7 +78,7 @@ const MovieRow = ({ title, movies, isLoading, isLargeRow = false, onMovieClick }
         {showRightArrow && (
           <button
             onClick={() => scroll('right')}
-            className="absolute top-0 right-0 bottom-0 z-20 flex w-12 items-center justify-center rounded-l-md bg-black/50 text-3xl text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-black/70"
+            className="bg-bg-overlay text-ink hover:bg-bg-elevated absolute top-0 right-0 bottom-0 z-20 flex w-12 items-center justify-center rounded-l-md text-3xl opacity-0 transition-opacity group-hover:opacity-100"
           >
             ›
           </button>

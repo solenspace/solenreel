@@ -29,11 +29,11 @@ const Welcome = () => {
 
       {/* Hero */}
       <div className="relative z-10 flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
-        <h1 className="mb-4 max-w-3xl text-3xl font-bold text-white md:text-5xl lg:text-6xl">
+        <h1 className="text-ink mb-4 max-w-3xl text-3xl font-bold md:text-5xl lg:text-6xl">
           Unlimited movies, TV shows, and more
         </h1>
-        <p className="mb-6 text-lg text-gray-200 md:text-xl">Watch anywhere. Cancel anytime.</p>
-        <p className="mb-4 text-gray-300">Ready to watch? Create your account to get started.</p>
+        <p className="text-ink mb-6 text-lg md:text-xl">Watch anywhere. Cancel anytime.</p>
+        <p className="text-ink-muted mb-4">Ready to watch? Create your account to get started.</p>
         <Link to="/auth/login">
           <Button variant="primary" size="lg">
             Get Started ›

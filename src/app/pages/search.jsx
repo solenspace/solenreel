@@ -39,7 +39,7 @@ const Search = () => {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search for movies, TV shows, people..."
           autoFocus
-          className="bg-bg-elevated/70 focus:border-accent focus:ring-accent w-full rounded-lg border border-gray-600 px-6 py-4 text-lg text-white placeholder-gray-400 transition-colors focus:ring-1 focus:outline-none"
+          className="bg-bg-elevated/70 border-border focus:border-accent focus:ring-accent text-ink placeholder:text-ink-faint w-full rounded-lg border px-6 py-4 text-lg transition-colors focus:ring-1 focus:outline-none"
         />
       </div>
 
@@ -53,7 +53,7 @@ const Search = () => {
 
       {!isLoading && filteredResults.length > 0 && (
         <>
-          <p className="mb-4 text-sm text-gray-400">
+          <p className="text-ink-muted mb-4 text-sm">
             {filteredResults.length} results for &quot;{debouncedQuery}&quot;
           </p>
           <motion.div
@@ -74,8 +74,8 @@ const Search = () => {
                   className="w-full rounded-md object-cover transition-all group-hover:shadow-xl group-hover:ring-1 group-hover:ring-white/20"
                   loading="lazy"
                 />
-                <p className="mt-2 truncate text-sm text-white">{item.title || item.name}</p>
-                <p className="text-xs text-gray-400">
+                <p className="text-ink mt-2 truncate text-sm">{item.title || item.name}</p>
+                <p className="text-ink-muted text-xs">
                   {(item.release_date || item.first_air_date || '').slice(0, 4)}
                   {item.vote_average > 0 && ` · ${Math.round(item.vote_average * 10)}%`}
                 </p>
@@ -87,14 +87,18 @@ const Search = () => {
 
       {!isLoading && debouncedQuery && filteredResults.length === 0 && (
         <div className="py-24 text-center">
-          <p className="text-lg text-gray-400">No results found for &quot;{debouncedQuery}&quot;</p>
-          <p className="mt-2 text-sm text-gray-500">Try different keywords or check the spelling</p>
+          <p className="text-ink-muted text-lg">
+            No results found for &quot;{debouncedQuery}&quot;
+          </p>
+          <p className="text-ink-faint mt-2 text-sm">
+            Try different keywords or check the spelling
+          </p>
         </div>
       )}
 
       {!debouncedQuery && (
         <div className="py-24 text-center">
-          <p className="text-lg text-gray-400">Search for your favorite movies and TV shows</p>
+          <p className="text-ink-muted text-lg">Search for your favorite movies and TV shows</p>
         </div>
       )}
 

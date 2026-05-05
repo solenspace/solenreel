@@ -94,7 +94,7 @@ const Banner = ({ movie, onMoreInfo }) => {
       <div className="absolute bottom-28 left-4 z-10 max-w-xl space-y-4 md:left-12">
         <div className="flex items-center gap-2 text-sm">
           <span className="text-accent text-lg font-bold">N</span>
-          <span className="text-xs font-semibold tracking-widest text-gray-300 uppercase">
+          <span className="text-ink-muted text-xs font-semibold tracking-widest uppercase">
             {movie.media_type === 'tv' ? 'S E R I E S' : 'M O V I E'}
           </span>
         </div>
@@ -111,7 +111,7 @@ const Banner = ({ movie, onMoreInfo }) => {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl font-bold text-white drop-shadow-lg md:text-6xl"
+            className="text-ink text-4xl font-bold drop-shadow-lg md:text-6xl"
           >
             {movie.title || movie.name}
           </motion.h1>
@@ -121,7 +121,7 @@ const Banner = ({ movie, onMoreInfo }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="line-clamp-3 max-w-lg text-sm text-gray-200 drop-shadow-md md:text-base"
+          className="text-ink line-clamp-3 max-w-lg text-sm drop-shadow-md md:text-base"
         >
           {truncate(movie.overview || '', 200)}
         </motion.p>
@@ -155,7 +155,7 @@ const Banner = ({ movie, onMoreInfo }) => {
           {showTrailer && (
             <button
               onClick={() => setIsMuted(!isMuted)}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-black/30 text-sm text-white transition-colors hover:bg-black/50"
+              className="border-border bg-bg-overlay text-ink hover:bg-bg-elevated flex h-10 w-10 items-center justify-center rounded-full border text-sm transition-colors"
               title={isMuted ? 'Unmute' : 'Mute'}
             >
               {isMuted ? '🔇' : '🔊'}
@@ -171,7 +171,7 @@ const Banner = ({ movie, onMoreInfo }) => {
                 setShowTrailer(true);
               }
             }}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-black/30 text-sm text-white transition-colors hover:bg-black/50"
+            className="border-border bg-bg-overlay text-ink hover:bg-bg-elevated flex h-10 w-10 items-center justify-center rounded-full border text-sm transition-colors"
             title={showTrailer ? 'Stop trailer' : 'Play trailer'}
           >
             {showTrailer ? '⏹' : '▶'}

@@ -42,10 +42,14 @@ export {};
 
 let raw;
 try {
-  raw = execFileSync('pnpx', ['supabase', 'gen', 'types', 'typescript', '--local', '--schema', 'public'], {
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-  });
+  raw = execFileSync(
+    'pnpx',
+    ['supabase', 'gen', 'types', 'typescript', '--local', '--schema', 'public'],
+    {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    },
+  );
 } catch (err) {
   console.error('[types:gen] supabase gen types failed.');
   console.error('Is the local stack running? Run `pnpx supabase status` to check.');

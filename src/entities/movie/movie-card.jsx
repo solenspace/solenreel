@@ -41,11 +41,11 @@ const MovieCard = ({ movie, isLargeRow = false, onClick }) => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="absolute right-0 bottom-0 left-0 rounded-b-md bg-gradient-to-t from-black/90 to-transparent p-2"
+          className="from-bg-overlay absolute right-0 bottom-0 left-0 rounded-b-md bg-gradient-to-t to-transparent p-2"
         >
-          <p className="truncate text-xs font-medium text-white">{movie.title || movie.name}</p>
+          <p className="text-ink truncate text-xs font-medium">{movie.title || movie.name}</p>
           {movie.vote_average > 0 && (
-            <p className="text-xs text-green-400">{Math.round(movie.vote_average * 10)}% Match</p>
+            <p className="text-success text-xs">{Math.round(movie.vote_average * 10)}% Match</p>
           )}
         </motion.div>
       )}

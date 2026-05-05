@@ -13,7 +13,15 @@ vi.mock('@/shared/api/supabase', () => {
   });
   const getSession = vi.fn().mockResolvedValue({ data: { session: null } });
   return {
-    supabase: { auth: { getSession, onAuthStateChange, signInWithPassword: vi.fn(), signUp: vi.fn(), signOut: vi.fn() } },
+    supabase: {
+      auth: {
+        getSession,
+        onAuthStateChange,
+        signInWithPassword: vi.fn(),
+        signUp: vi.fn(),
+        signOut: vi.fn(),
+      },
+    },
     __callbacks: callbacks,
     __unsubscribe: unsubscribe,
   };

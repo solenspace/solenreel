@@ -40,22 +40,22 @@ const Navbar = () => {
         </Link>
         <ul className="hidden items-center gap-5 md:flex">
           <li>
-            <Link to="/" className="text-sm text-white transition-colors hover:text-gray-300">
+            <Link to="/" className="text-ink hover:text-ink-muted text-sm transition-colors">
               Home
             </Link>
           </li>
           <li>
-            <Link to="/search" className="text-sm text-gray-300 transition-colors hover:text-white">
+            <Link to="/search" className="text-ink-muted hover:text-ink text-sm transition-colors">
               TV Shows
             </Link>
           </li>
           <li>
-            <Link to="/search" className="text-sm text-gray-300 transition-colors hover:text-white">
+            <Link to="/search" className="text-ink-muted hover:text-ink text-sm transition-colors">
               Movies
             </Link>
           </li>
           <li>
-            <Link to="/search" className="text-sm text-gray-300 transition-colors hover:text-white">
+            <Link to="/search" className="text-ink-muted hover:text-ink text-sm transition-colors">
               New & Popular
             </Link>
           </li>
@@ -72,7 +72,7 @@ const Navbar = () => {
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.3 }}
               onSubmit={handleSearchSubmit}
-              className="flex items-center overflow-hidden border border-white/50 bg-black/80"
+              className="border-border bg-bg-overlay flex items-center overflow-hidden border"
             >
               <button
                 type="button"
@@ -91,7 +91,7 @@ const Navbar = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onBlur={() => !searchQuery && setSearchOpen(false)}
-                className="w-full bg-transparent py-1.5 pr-3 text-sm text-white placeholder-gray-400 outline-none"
+                className="text-ink placeholder:text-ink-faint w-full bg-transparent py-1.5 pr-3 text-sm outline-none"
               />
             </motion.form>
           ) : (
@@ -129,18 +129,18 @@ const Navbar = () => {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="bg-bg-elevated/95 absolute top-full right-0 mt-2 w-48 overflow-hidden rounded-md border border-gray-700 shadow-xl backdrop-blur-sm"
+                className="bg-bg-elevated/95 border-border absolute top-full right-0 mt-2 w-48 overflow-hidden rounded-md border shadow-xl backdrop-blur-sm"
               >
                 <Link
                   to="/profile"
-                  className="block px-4 py-3 text-sm text-gray-300 transition-colors hover:bg-white/10"
+                  className="text-ink-muted hover:bg-bg-overlay hover:text-ink block px-4 py-3 text-sm transition-colors"
                 >
                   Account
                 </Link>
-                <hr className="border-gray-700" />
+                <hr className="border-border" />
                 <button
                   onClick={() => dispatch(signOut())}
-                  className="w-full bg-transparent px-4 py-3 text-left text-sm text-gray-300 transition-colors hover:bg-white/10"
+                  className="text-ink-muted hover:bg-bg-overlay hover:text-ink w-full bg-transparent px-4 py-3 text-left text-sm transition-colors"
                 >
                   Sign out of reel
                 </button>

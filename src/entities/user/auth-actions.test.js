@@ -99,7 +99,11 @@ describe('signUp thunk', () => {
   it.each([
     {
       name: 'weak_password',
-      error: { code: 'weak_password', message: 'Password should be at least 6 characters', status: 422 },
+      error: {
+        code: 'weak_password',
+        message: 'Password should be at least 6 characters',
+        status: 422,
+      },
     },
     {
       name: 'user_already_exists',
