@@ -1,7 +1,7 @@
 // @ts-check
-import { img } from '@/shared/api/tmdb';
+import { backdropUrl } from '@/entities/movie/queries';
 
-/** @typedef {import('@/shared/api/tmdb').Movie} Movie */
+/** @typedef {import('@/entities/movie/types').Movie} Movie */
 
 /**
  * @param {{ movie: Movie | null | undefined, isTrailerPlaying?: boolean }} props
@@ -9,14 +9,15 @@ import { img } from '@/shared/api/tmdb';
 const BannerAmbient = ({ movie, isTrailerPlaying }) => {
   if (!movie) return null;
 
-  const backdropUrl = img.backdrop(movie.backdrop_path);
+  const url = backdropUrl(movie.backdropPath);
+  if (!url) return null;
 
   return (
     <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
       <div
         className="absolute inset-0 scale-110 transition-opacity duration-2000"
         style={{
-          backgroundImage: `url(${backdropUrl})`,
+          backgroundImage: `url(${url})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           filter: 'blur(80px) saturate(1.5)',

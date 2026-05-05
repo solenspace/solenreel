@@ -177,6 +177,12 @@ export default [
                 'Import the singleton `supabase` from @/shared/api/supabase instead. ' +
                 'Spec 04 invariant — only src/shared/api/supabase.js may touch this module directly.',
             },
+            {
+              name: 'axios',
+              message:
+                'Import a typed hook from @/entities/movie/queries (or call the singleton from @/shared/api/tmdb internally). ' +
+                'Spec 09 invariant — only src/shared/api/tmdb.js may import axios directly.',
+            },
           ],
         },
       ],
@@ -233,6 +239,16 @@ export default [
   // import `@supabase/supabase-js` directly. Every other importer is a defect.
   {
     files: ['src/shared/api/supabase.js', 'src/shared/api/supabase.test.jsx'],
+    rules: {
+      'no-restricted-imports': 'off',
+    },
+  },
+
+  // Spec 09 invariant: only the TMDB singleton (and its test) may import
+  // `axios` directly. Every other importer is routed through the typed hooks
+  // at `@/entities/movie/queries`.
+  {
+    files: ['src/shared/api/tmdb.js', 'src/shared/api/tmdb.test.js'],
     rules: {
       'no-restricted-imports': 'off',
     },

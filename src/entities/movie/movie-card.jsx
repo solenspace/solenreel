@@ -1,9 +1,9 @@
 // @ts-check
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { img } from '@/shared/api/tmdb';
+import { posterUrl, backdropUrl } from '@/entities/movie/queries';
 
-/** @typedef {import('@/shared/api/tmdb').Movie} Movie */
+/** @typedef {import('@/entities/movie/types').Movie} Movie */
 
 /**
  * @param {{
@@ -14,11 +14,11 @@ import { img } from '@/shared/api/tmdb';
  */
 const MovieCard = ({ movie, isLargeRow = false, onClick }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const posterUrl = isLargeRow
-    ? img.poster(movie.poster_path)
-    : img.backdrop(movie.backdrop_path, 'w780') || img.poster(movie.poster_path);
+  const url = isLargeRow
+    ? posterUrl(movie.posterPath, 'w342')
+    : backdropUrl(movie.backdropPath, 'w780') ?? posterUrl(movie.posterPath, 'w342');
 
-  if (!posterUrl) return null;
+  if (!url) return null;
 
   return (
     <motion.div
@@ -30,8 +30,8 @@ const MovieCard = ({ movie, isLargeRow = false, onClick }) => {
       transition={{ duration: 0.3 }}
     >
       <img
-        src={posterUrl}
-        alt={movie.title || movie.name}
+        src={url}
+        alt={movie.title}
         className={`rounded-md object-cover transition-shadow duration-300 ${
           isLargeRow ? 'h-[250px] w-[170px]' : 'h-[160px] w-[280px]'
         } ${isHovered ? 'shadow-2xl ring-1 shadow-black/50 ring-white/20' : ''}`}
@@ -43,9 +43,9 @@ const MovieCard = ({ movie, isLargeRow = false, onClick }) => {
           animate={{ opacity: 1 }}
           className="from-bg-overlay absolute right-0 bottom-0 left-0 rounded-b-md bg-gradient-to-t to-transparent p-2"
         >
-          <p className="text-ink truncate text-xs font-medium">{movie.title || movie.name}</p>
-          {movie.vote_average > 0 && (
-            <p className="text-success text-xs">{Math.round(movie.vote_average * 10)}% Match</p>
+          <p className="text-ink truncate text-xs font-medium">{movie.title}</p>
+          {movie.voteAverage > 0 && (
+            <p className="text-success text-xs">{Math.round(movie.voteAverage * 10)}% Match</p>
           )}
         </motion.div>
       )}
