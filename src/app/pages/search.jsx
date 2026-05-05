@@ -1,34 +1,27 @@
 // @ts-check
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useSearch } from '@/entities/movie/use-movies';
-import { useDebounce } from '@/shared/lib/use-debounce';
-import { img } from '@/shared/api/tmdb';
-import MovieModal from '@/features/movie-modal/movie-modal';
 import { motion } from 'framer-motion';
+import { useSearchMulti, posterUrl } from '@/entities/movie/queries';
+import MovieModal from '@/features/movie-modal/movie-modal';
 
-/** @typedef {import('@/shared/api/tmdb').Movie} Movie */
+/** @typedef {import('@/entities/movie/types').Movie} Movie */
 
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
   const [query, setQuery] = useState(initialQuery);
-  const debouncedQuery = useDebounce(query, 400);
-  const { data: results, isLoading } = useSearch(debouncedQuery);
+  const { data: response, isLoading } = useSearchMulti(query);
   const [selectedMovie, setSelectedMovie] = useState(/** @type {Movie | null} */ (null));
 
   useEffect(() => {
-    if (debouncedQuery) {
-      setSearchParams({ q: debouncedQuery });
-    } else {
-      setSearchParams({});
-    }
-  }, [debouncedQuery, setSearchParams]);
+    setSearchParams(query ? { q: query } : {}, { replace: true });
+  }, [query, setSearchParams]);
 
-  const filteredResults =
-    results?.filter(
-      (item) => item.poster_path && (item.media_type === 'movie' || item.media_type === 'tv'),
-    ) || [];
+  const filteredResults = (response?.results ?? []).filter(
+    /** @param {Movie} item */
+    (item) => item.posterPath !== null,
+  );
 
   return (
     <div className="min-h-screen px-4 pt-24 md:px-12">
@@ -54,49 +47,50 @@ const Search = () => {
       {!isLoading && filteredResults.length > 0 && (
         <>
           <p className="text-ink-muted mb-4 text-sm">
-            {filteredResults.length} results for &quot;{debouncedQuery}&quot;
+            {filteredResults.length} results for &quot;{query}&quot;
           </p>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
           >
-            {filteredResults.map((item) => (
-              <motion.div
-                key={item.id}
-                whileHover={{ scale: 1.05 }}
-                className="group cursor-pointer"
-                onClick={() => setSelectedMovie(item)}
-              >
-                <img
-                  src={img.poster(item.poster_path)}
-                  alt={item.title || item.name}
-                  className="w-full rounded-md object-cover transition-all group-hover:shadow-xl group-hover:ring-1 group-hover:ring-white/20"
-                  loading="lazy"
-                />
-                <p className="text-ink mt-2 truncate text-sm">{item.title || item.name}</p>
-                <p className="text-ink-muted text-xs">
-                  {(item.release_date || item.first_air_date || '').slice(0, 4)}
-                  {item.vote_average > 0 && ` · ${Math.round(item.vote_average * 10)}%`}
-                </p>
-              </motion.div>
-            ))}
+            {filteredResults.map(/** @param {Movie} item */ (item) => {
+              const url = posterUrl(item.posterPath);
+              return (
+                <motion.div
+                  key={item.id}
+                  whileHover={{ scale: 1.05 }}
+                  className="group cursor-pointer"
+                  onClick={() => setSelectedMovie(item)}
+                >
+                  {url && (
+                    <img
+                      src={url}
+                      alt={item.title}
+                      className="w-full rounded-md object-cover transition-all group-hover:shadow-xl group-hover:ring-1 group-hover:ring-white/20"
+                      loading="lazy"
+                    />
+                  )}
+                  <p className="text-ink mt-2 truncate text-sm">{item.title}</p>
+                  <p className="text-ink-muted text-xs">
+                    {item.year > 0 ? item.year : ''}
+                    {item.voteAverage > 0 && ` · ${Math.round(item.voteAverage * 10)}%`}
+                  </p>
+                </motion.div>
+              );
+            })}
           </motion.div>
         </>
       )}
 
-      {!isLoading && debouncedQuery && filteredResults.length === 0 && (
+      {!isLoading && query.length >= 2 && filteredResults.length === 0 && (
         <div className="py-24 text-center">
-          <p className="text-ink-muted text-lg">
-            No results found for &quot;{debouncedQuery}&quot;
-          </p>
-          <p className="text-ink-faint mt-2 text-sm">
-            Try different keywords or check the spelling
-          </p>
+          <p className="text-ink-muted text-lg">No results found for &quot;{query}&quot;</p>
+          <p className="text-ink-faint mt-2 text-sm">Try different keywords or check the spelling</p>
         </div>
       )}
 
-      {!debouncedQuery && (
+      {query.length < 2 && (
         <div className="py-24 text-center">
           <p className="text-ink-muted text-lg">Search for your favorite movies and TV shows</p>
         </div>

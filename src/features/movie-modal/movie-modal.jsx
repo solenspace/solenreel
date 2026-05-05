@@ -1,19 +1,25 @@
 // @ts-check
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useMovieDetails, useTVDetails } from '@/entities/movie/use-movies';
-import { img } from '@/shared/api/tmdb';
+import {
+  useMovieDetails,
+  useTVDetails,
+  backdropUrl,
+  profileUrl,
+} from '@/entities/movie/queries';
 import TrailerPlayer from '@/shared/ui/trailer-player';
 import Button from '@/shared/ui/button';
 import { PlayIcon } from '@/shared/ui/icons';
 
-/** @typedef {import('@/shared/api/tmdb').Movie} Movie */
+/** @typedef {import('@/entities/movie/types').Movie} Movie */
+/** @typedef {import('@/entities/movie/types').Video} Video */
+/** @typedef {import('@/entities/movie/types').Credit} Credit */
 
 /**
  * @param {{ movie: Movie, onClose: () => void }} props
  */
 const MovieModal = ({ movie, onClose }) => {
-  const isTV = movie.media_type === 'tv' || !!movie.first_air_date;
+  const isTV = movie.mediaType === 'tv';
 
   const movieQuery = useMovieDetails(!isTV ? movie.id : null);
   const tvQuery = useTVDetails(isTV ? movie.id : null);
@@ -34,22 +40,25 @@ const MovieModal = ({ movie, onClose }) => {
   }, [onClose]);
 
   const trailerKey =
-    details?.videos?.results?.find(
-      /** @param {{ type: string, site: string, key: string }} v */
+    details?.videos.find(
+      /** @param {Video} v */
       (v) => v.type === 'Trailer' && v.site === 'YouTube',
-    )?.key || details?.videos?.results?.[0]?.key;
+    )?.key ?? details?.videos[0]?.key;
 
-  /** @type {Array<{ id: number, name: string, profile_path?: string | null, character?: string }>} */
-  const cast = details?.credits?.cast?.slice(0, 12) || [];
-  /** @type {Array<Movie>} */
-  const similar = details?.similar?.results?.slice(0, 9) || [];
+  const cast = details?.credits.cast.slice(0, 12) ?? [];
+  const similar = details?.similar.slice(0, 9) ?? [];
   const genres =
-    details?.genres?.map(/** @param {{ name: string }} g */ (g) => g.name).join(', ') || '';
-  const rating = details?.vote_average ? `${Math.round(details.vote_average * 10)}%` : '';
-  const year = (details?.release_date || details?.first_air_date || '').slice(0, 4);
+    details?.genres
+      .map(/** @param {{ id: number, name: string }} g */ (g) => g.name)
+      .join(', ') ?? '';
+  const rating = details?.voteAverage ? `${Math.round(details.voteAverage * 10)}%` : '';
+  const year = details?.year && details.year > 0 ? String(details.year) : '';
   const runtime = details?.runtime
     ? `${Math.floor(details.runtime / 60)}h ${details.runtime % 60}m`
     : '';
+  const fallbackBackdrop = backdropUrl(details?.backdropPath ?? movie.backdropPath);
+  const title = details?.title || movie.title;
+  const overview = details?.overview || movie.overview;
 
   return (
     <AnimatePresence>
@@ -83,7 +92,9 @@ const MovieModal = ({ movie, onClose }) => {
             ) : (
               <div
                 className="h-full w-full bg-cover bg-center"
-                style={{ backgroundImage: `url(${img.backdrop(movie.backdrop_path)})` }}
+                style={{
+                  backgroundImage: fallbackBackdrop ? `url(${fallbackBackdrop})` : undefined,
+                }}
               />
             )}
             <div className="from-bg-elevated absolute right-0 bottom-0 left-0 h-24 bg-gradient-to-t to-transparent" />
@@ -96,9 +107,7 @@ const MovieModal = ({ movie, onClose }) => {
 
           {/* Details */}
           <div className="p-6 md:p-8">
-            <h2 className="text-ink mb-3 text-2xl font-bold">
-              {details?.title || details?.name || movie.title || movie.name}
-            </h2>
+            <h2 className="text-ink mb-3 text-2xl font-bold">{title}</h2>
 
             <div className="flex flex-col gap-6 md:flex-row md:gap-8">
               <div className="flex-1">
@@ -110,9 +119,7 @@ const MovieModal = ({ movie, onClose }) => {
                     HD
                   </span>
                 </div>
-                <p className="text-ink text-sm leading-relaxed">
-                  {details?.overview || movie.overview}
-                </p>
+                <p className="text-ink text-sm leading-relaxed">{overview}</p>
               </div>
               <div className="space-y-2 text-sm md:w-64">
                 {cast.length > 0 && (
@@ -120,7 +127,7 @@ const MovieModal = ({ movie, onClose }) => {
                     <span className="text-ink-faint">Cast: </span>
                     {cast
                       .slice(0, 4)
-                      .map((c) => c.name)
+                      .map(/** @param {Credit} c */ (c) => c.name)
                       .join(', ')}
                     {cast.length > 4 && ', more...'}
                   </p>
@@ -139,24 +146,27 @@ const MovieModal = ({ movie, onClose }) => {
               <div className="mt-8">
                 <h3 className="text-ink mb-4 font-semibold">Cast</h3>
                 <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
-                  {cast.map((person) => (
-                    <div key={person.id} className="w-20 flex-shrink-0 text-center">
-                      {person.profile_path ? (
-                        <img
-                          src={img.profile(person.profile_path)}
-                          alt={person.name}
-                          className="mx-auto mb-1 h-16 w-16 rounded-full object-cover"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="bg-bg-elevated text-ink-faint mx-auto mb-1 flex h-16 w-16 items-center justify-center rounded-full text-xs">
-                          N/A
-                        </div>
-                      )}
-                      <p className="text-ink-muted truncate text-xs">{person.name}</p>
-                      <p className="text-ink-faint truncate text-xs">{person.character}</p>
-                    </div>
-                  ))}
+                  {cast.map(/** @param {Credit} person */ (person) => {
+                    const photo = profileUrl(person.profilePath);
+                    return (
+                      <div key={person.id} className="w-20 flex-shrink-0 text-center">
+                        {photo ? (
+                          <img
+                            src={photo}
+                            alt={person.name}
+                            className="mx-auto mb-1 h-16 w-16 rounded-full object-cover"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="bg-bg-elevated text-ink-faint mx-auto mb-1 flex h-16 w-16 items-center justify-center rounded-full text-xs">
+                            N/A
+                          </div>
+                        )}
+                        <p className="text-ink-muted truncate text-xs">{person.name}</p>
+                        <p className="text-ink-faint truncate text-xs">{person.character}</p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -166,31 +176,32 @@ const MovieModal = ({ movie, onClose }) => {
               <div className="mt-8">
                 <h3 className="text-ink mb-4 font-semibold">More Like This</h3>
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-                  {similar.map((item) => (
-                    <div
-                      key={item.id}
-                      className="bg-bg-elevated overflow-hidden rounded-md transition-all hover:ring-1 hover:ring-white/20"
-                    >
-                      {item.backdrop_path ? (
-                        <div
-                          className="aspect-video w-full bg-cover bg-center"
-                          style={{
-                            backgroundImage: `url(${img.backdrop(item.backdrop_path, 'w500')})`,
-                          }}
-                        />
-                      ) : (
-                        <div className="bg-bg text-ink-faint flex aspect-video w-full items-center justify-center text-sm">
-                          No Image
+                  {similar.map(/** @param {Movie} item */ (item) => {
+                    const tile = backdropUrl(item.backdropPath, 'w500');
+                    return (
+                      <div
+                        key={item.id}
+                        className="bg-bg-elevated overflow-hidden rounded-md transition-all hover:ring-1 hover:ring-white/20"
+                      >
+                        {tile ? (
+                          <div
+                            className="aspect-video w-full bg-cover bg-center"
+                            style={{ backgroundImage: `url(${tile})` }}
+                          />
+                        ) : (
+                          <div className="bg-bg text-ink-faint flex aspect-video w-full items-center justify-center text-sm">
+                            No Image
+                          </div>
+                        )}
+                        <div className="p-3">
+                          <p className="text-ink truncate text-sm font-medium">{item.title}</p>
+                          <p className="text-ink-muted mt-1 line-clamp-3 text-xs">
+                            {item.overview}
+                          </p>
                         </div>
-                      )}
-                      <div className="p-3">
-                        <p className="text-ink truncate text-sm font-medium">
-                          {item.title || item.name}
-                        </p>
-                        <p className="text-ink-muted mt-1 line-clamp-3 text-xs">{item.overview}</p>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

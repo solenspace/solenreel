@@ -1,14 +1,19 @@
 // @ts-check
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { img } from '@/shared/api/tmdb';
-import { useMovieImages, useMovieVideos } from '@/entities/movie/use-movies';
+import {
+  useMovieImages,
+  useMovieVideos,
+  backdropUrl,
+  logoUrl,
+} from '@/entities/movie/queries';
 import TrailerPlayer from '@/shared/ui/trailer-player';
 import Button from '@/shared/ui/button';
 import SkeletonBanner from '@/shared/ui/skeleton-banner';
 import { PlayIcon, InformationIcon } from '@/shared/ui/icons';
 
-/** @typedef {import('@/shared/api/tmdb').Movie} Movie */
+/** @typedef {import('@/entities/movie/types').Movie} Movie */
+/** @typedef {import('@/entities/movie/types').Video} Video */
 
 /**
  * @param {string | null | undefined} str
@@ -30,12 +35,12 @@ const Banner = ({ movie, onMoreInfo }) => {
 
   const trailerKey =
     videos?.find(
-      /** @param {Movie} v */
+      /** @param {Video} v */
       (v) => v.type === 'Trailer' && v.site === 'YouTube',
-    )?.key || videos?.[0]?.key;
+    )?.key ?? videos?.[0]?.key;
 
-  const logoPath = images?.logos?.[0]?.file_path;
-  const backdropUrl = img.backdrop(movie?.backdrop_path);
+  const logoPath = images?.logos[0]?.filePath ?? null;
+  const backdrop = backdropUrl(movie?.backdropPath);
 
   useEffect(() => {
     if (!trailerKey) return;
@@ -62,7 +67,7 @@ const Banner = ({ movie, onMoreInfo }) => {
       {/* Backdrop image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000"
-        style={{ backgroundImage: `url(${backdropUrl})` }}
+        style={{ backgroundImage: backdrop ? `url(${backdrop})` : undefined }}
       />
 
       {/* Trailer overlay */}
@@ -95,7 +100,7 @@ const Banner = ({ movie, onMoreInfo }) => {
         <div className="flex items-center gap-2 text-sm">
           <span className="text-accent text-lg font-bold">N</span>
           <span className="text-ink-muted text-xs font-semibold tracking-widest uppercase">
-            {movie.media_type === 'tv' ? 'S E R I E S' : 'M O V I E'}
+            {movie.mediaType === 'tv' ? 'S E R I E S' : 'M O V I E'}
           </span>
         </div>
 
@@ -103,8 +108,8 @@ const Banner = ({ movie, onMoreInfo }) => {
           <motion.img
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            src={img.logo(logoPath)}
-            alt={movie.title || movie.name}
+            src={logoUrl(logoPath) ?? undefined}
+            alt={movie.title}
             className="max-h-[120px] w-auto max-w-[350px] object-contain drop-shadow-2xl"
           />
         ) : (
@@ -113,7 +118,7 @@ const Banner = ({ movie, onMoreInfo }) => {
             animate={{ opacity: 1, y: 0 }}
             className="text-ink text-4xl font-bold drop-shadow-lg md:text-6xl"
           >
-            {movie.title || movie.name}
+            {movie.title}
           </motion.h1>
         )}
 
@@ -123,7 +128,7 @@ const Banner = ({ movie, onMoreInfo }) => {
           transition={{ delay: 0.3 }}
           className="text-ink line-clamp-3 max-w-lg text-sm drop-shadow-md md:text-base"
         >
-          {truncate(movie.overview || '', 200)}
+          {truncate(movie.overview, 200)}
         </motion.p>
 
         <motion.div

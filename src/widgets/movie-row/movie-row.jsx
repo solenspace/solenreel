@@ -3,7 +3,7 @@ import { useRef, useState } from 'react';
 import MovieCard from '@/entities/movie/movie-card';
 import SkeletonRow from '@/shared/ui/skeleton-row';
 
-/** @typedef {import('@/shared/api/tmdb').Movie} Movie */
+/** @typedef {import('@/entities/movie/types').Movie} Movie */
 
 /**
  * @param {{
