@@ -161,4 +161,31 @@ export default [
       'jsdoc/require-returns-description': 'off',
     },
   },
+
+  // Test files: declare vitest globals (belt-and-suspenders next to the explicit
+  // `import { describe, it, ... } from 'vitest'` at the top of each test), allow
+  // multiple non-component exports, and lift the FSD zone rule for the
+  // `src/shared/test/**` helpers (redux-wrapper legitimately reaches into
+  // `@/entities/user/user-slice` to construct a real reducer for tests).
+  {
+    files: ['src/**/*.test.{js,jsx}', 'src/test-setup.js', 'src/shared/test/**/*.{js,jsx}'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        vi: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+      },
+    },
+    rules: {
+      'react-refresh/only-export-components': 'off',
+      'import/no-restricted-paths': 'off',
+    },
+  },
 ];

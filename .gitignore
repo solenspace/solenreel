@@ -22,6 +22,9 @@ build/
 .vite/
 *.local
 
+# Vitest coverage
+coverage/
+
 # Env
 .env
 .env.local
