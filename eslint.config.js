@@ -140,6 +140,19 @@ export default [
     rules: {
       'reel/require-ts-check': 'error',
       'import/no-restricted-paths': ['error', { zones: fsdZones }],
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@supabase/supabase-js',
+              message:
+                'Import the singleton `supabase` from @/shared/api/supabase instead. ' +
+                'Spec 04 invariant — only src/shared/api/supabase.js may touch this module directly.',
+            },
+          ],
+        },
+      ],
     },
   },
 
@@ -159,6 +172,42 @@ export default [
       'jsdoc/require-param-description': 'off',
       'jsdoc/require-returns': 'off',
       'jsdoc/require-returns-description': 'off',
+    },
+  },
+
+  // Test files: declare vitest globals (belt-and-suspenders next to the explicit
+  // `import { describe, it, ... } from 'vitest'` at the top of each test), allow
+  // multiple non-component exports, and lift the FSD zone rule for the
+  // `src/shared/test/**` helpers (redux-wrapper legitimately reaches into
+  // `@/entities/user/user-slice` to construct a real reducer for tests).
+  {
+    files: ['src/**/*.test.{js,jsx}', 'src/test-setup.js', 'src/shared/test/**/*.{js,jsx}'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        vi: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+      },
+    },
+    rules: {
+      'react-refresh/only-export-components': 'off',
+      'import/no-restricted-paths': 'off',
+    },
+  },
+
+  // Spec 04 invariant: only the Supabase singleton (and its smoke test) may
+  // import `@supabase/supabase-js` directly. Every other importer is a defect.
+  {
+    files: ['src/shared/api/supabase.js', 'src/shared/api/supabase.test.jsx'],
+    rules: {
+      'no-restricted-imports': 'off',
     },
   },
 ];
