@@ -1,30 +1,20 @@
 // @ts-check
 import { Outlet, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
-import { useDispatch } from 'react-redux';
-import { auth } from '@/shared/api/firebase';
-import { login } from '@/entities/user/user-slice';
+import { useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { selectAuthStatus } from '@/entities/user/user-slice';
 import LoadingScreen from '@/shared/ui/loading-screen';
 import ErrorBoundary from '@/shared/ui/error-boundary';
 
 const AuthLayout = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [authChecked, setAuthChecked] = useState(false);
+  const status = useSelector(selectAuthStatus);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        dispatch(login({ uid: firebaseUser.uid, email: firebaseUser.email }));
-        navigate('/');
-      }
-      setAuthChecked(true);
-    });
-    return unsubscribe;
-  }, [dispatch, navigate]);
+    if (status === 'authenticated') navigate('/');
+  }, [status, navigate]);
 
-  if (!authChecked) return <LoadingScreen />;
+  if (status === 'idle') return <LoadingScreen />;
 
   return (
     <div className="bg-bg min-h-screen">

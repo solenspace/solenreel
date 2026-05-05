@@ -1,10 +1,12 @@
 // @ts-check
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from '@/shared/lib/use-app-dispatch';
 import { selectUser } from '@/entities/user/user-slice';
-import { auth } from '@/shared/api/firebase';
+import { signOut } from '@/entities/user/auth-actions';
 import Button from '@/shared/ui/button';
 
 const Profile = () => {
+  const dispatch = useAppDispatch();
   const user = useSelector(selectUser);
 
   return (
@@ -35,7 +37,7 @@ const Profile = () => {
 
           <hr className="border-gray-700" />
 
-          <Button variant="primary" size="full" onClick={() => auth.signOut()}>
+          <Button variant="primary" size="full" onClick={() => dispatch(signOut())}>
             Sign Out
           </Button>
         </div>
