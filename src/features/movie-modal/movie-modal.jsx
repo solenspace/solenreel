@@ -71,7 +71,7 @@ const MovieModal = ({ movie, onClose }) => {
           {/* Close button */}
           <button
             onClick={onClose}
-            className="bg-bg-elevated/80 hover:bg-bg-elevated absolute top-4 right-4 z-20 flex h-9 w-9 items-center justify-center rounded-full text-xl text-white transition-colors"
+            className="bg-bg-elevated/80 hover:bg-bg-elevated text-ink absolute top-4 right-4 z-20 flex h-9 w-9 items-center justify-center rounded-full text-xl transition-colors"
           >
             ✕
           </button>
@@ -96,28 +96,28 @@ const MovieModal = ({ movie, onClose }) => {
 
           {/* Details */}
           <div className="p-6 md:p-8">
-            <h2 className="mb-3 text-2xl font-bold text-white">
+            <h2 className="text-ink mb-3 text-2xl font-bold">
               {details?.title || details?.name || movie.title || movie.name}
             </h2>
 
             <div className="flex flex-col gap-6 md:flex-row md:gap-8">
               <div className="flex-1">
                 <div className="mb-3 flex flex-wrap items-center gap-3 text-sm">
-                  {rating && <span className="font-semibold text-green-400">{rating} Match</span>}
-                  {year && <span className="text-gray-400">{year}</span>}
-                  {runtime && <span className="text-gray-400">{runtime}</span>}
-                  <span className="rounded border border-gray-500 px-1.5 py-0.5 text-xs text-gray-400">
+                  {rating && <span className="text-success font-semibold">{rating} Match</span>}
+                  {year && <span className="text-ink-muted">{year}</span>}
+                  {runtime && <span className="text-ink-muted">{runtime}</span>}
+                  <span className="border-border text-ink-muted rounded border px-1.5 py-0.5 text-xs">
                     HD
                   </span>
                 </div>
-                <p className="text-sm leading-relaxed text-gray-200">
+                <p className="text-ink text-sm leading-relaxed">
                   {details?.overview || movie.overview}
                 </p>
               </div>
               <div className="space-y-2 text-sm md:w-64">
                 {cast.length > 0 && (
-                  <p className="text-gray-400">
-                    <span className="text-gray-500">Cast: </span>
+                  <p className="text-ink-muted">
+                    <span className="text-ink-faint">Cast: </span>
                     {cast
                       .slice(0, 4)
                       .map((c) => c.name)
@@ -126,8 +126,8 @@ const MovieModal = ({ movie, onClose }) => {
                   </p>
                 )}
                 {genres && (
-                  <p className="text-gray-400">
-                    <span className="text-gray-500">Genres: </span>
+                  <p className="text-ink-muted">
+                    <span className="text-ink-faint">Genres: </span>
                     {genres}
                   </p>
                 )}
@@ -137,7 +137,7 @@ const MovieModal = ({ movie, onClose }) => {
             {/* Cast */}
             {cast.length > 0 && (
               <div className="mt-8">
-                <h3 className="mb-4 font-semibold text-white">Cast</h3>
+                <h3 className="text-ink mb-4 font-semibold">Cast</h3>
                 <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
                   {cast.map((person) => (
                     <div key={person.id} className="w-20 flex-shrink-0 text-center">
@@ -149,12 +149,12 @@ const MovieModal = ({ movie, onClose }) => {
                           loading="lazy"
                         />
                       ) : (
-                        <div className="bg-bg-elevated mx-auto mb-1 flex h-16 w-16 items-center justify-center rounded-full text-xs text-gray-500">
+                        <div className="bg-bg-elevated text-ink-faint mx-auto mb-1 flex h-16 w-16 items-center justify-center rounded-full text-xs">
                           N/A
                         </div>
                       )}
-                      <p className="truncate text-xs text-gray-300">{person.name}</p>
-                      <p className="truncate text-xs text-gray-500">{person.character}</p>
+                      <p className="text-ink-muted truncate text-xs">{person.name}</p>
+                      <p className="text-ink-faint truncate text-xs">{person.character}</p>
                     </div>
                   ))}
                 </div>
@@ -164,7 +164,7 @@ const MovieModal = ({ movie, onClose }) => {
             {/* Similar */}
             {similar.length > 0 && (
               <div className="mt-8">
-                <h3 className="mb-4 font-semibold text-white">More Like This</h3>
+                <h3 className="text-ink mb-4 font-semibold">More Like This</h3>
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
                   {similar.map((item) => (
                     <div
@@ -179,15 +179,15 @@ const MovieModal = ({ movie, onClose }) => {
                           }}
                         />
                       ) : (
-                        <div className="bg-bg flex aspect-video w-full items-center justify-center text-sm text-gray-600">
+                        <div className="bg-bg text-ink-faint flex aspect-video w-full items-center justify-center text-sm">
                           No Image
                         </div>
                       )}
                       <div className="p-3">
-                        <p className="truncate text-sm font-medium text-white">
+                        <p className="text-ink truncate text-sm font-medium">
                           {item.title || item.name}
                         </p>
-                        <p className="mt-1 line-clamp-3 text-xs text-gray-400">{item.overview}</p>
+                        <p className="text-ink-muted mt-1 line-clamp-3 text-xs">{item.overview}</p>
                       </div>
                     </div>
                   ))}

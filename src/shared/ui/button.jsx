@@ -2,10 +2,10 @@
 
 /** @type {Record<string, string>} */
 const variants = {
-  primary: 'bg-accent hover:bg-accent text-white',
-  secondary: 'bg-gray-600/50 hover:bg-gray-600/70 text-white',
-  ghost: 'bg-transparent hover:bg-white/10 text-white',
-  play: 'bg-white hover:bg-white/80 text-black',
+  primary: 'bg-accent hover:bg-accent-strong text-accent-ink',
+  secondary: 'bg-bg-elevated hover:bg-border border border-border text-ink',
+  ghost: 'bg-transparent hover:bg-bg-elevated text-ink',
+  play: 'bg-ink hover:bg-ink/80 text-bg',
 };
 
 /** @type {Record<string, string>} */

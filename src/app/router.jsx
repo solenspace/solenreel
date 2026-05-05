@@ -10,6 +10,7 @@ const Search = lazy(() => import('@/app/pages/search'));
 const Profile = lazy(() => import('@/app/pages/profile'));
 const Login = lazy(() => import('@/app/pages/login'));
 const Welcome = lazy(() => import('@/app/pages/welcome'));
+const DevTokens = import.meta.env.DEV ? lazy(() => import('@/app/pages/_dev/tokens')) : null;
 
 /** @param {React.ComponentType} Component */
 const withSuspense = (Component) => (
@@ -36,6 +37,7 @@ const router = createBrowserRouter([
       { path: 'login', element: withSuspense(Login) },
     ],
   },
+  ...(DevTokens ? [{ path: '/dev/tokens', element: withSuspense(DevTokens) }] : []),
 ]);
 
 export default router;

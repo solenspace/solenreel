@@ -73,7 +73,7 @@ const Login = () => {
       {/* Form */}
       <div className="relative z-10 mt-8 flex justify-center px-4">
         <div className="w-full max-w-md rounded-lg bg-black/75 p-10 backdrop-blur-sm md:p-12">
-          <h1 className="mb-8 text-3xl font-bold text-white">{isSignUp ? 'Sign Up' : 'Sign In'}</h1>
+          <h1 className="text-ink mb-8 text-3xl font-bold">{isSignUp ? 'Sign Up' : 'Sign In'}</h1>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
@@ -105,7 +105,7 @@ const Login = () => {
             </Button>
           </form>
 
-          <div className="mt-8 text-sm text-gray-400">
+          <div className="text-ink-muted mt-8 text-sm">
             {isSignUp ? (
               <p>
                 Already have an account?{' '}
@@ -114,7 +114,7 @@ const Login = () => {
                     setIsSignUp(false);
                     setError('');
                   }}
-                  className="bg-transparent text-white hover:underline"
+                  className="text-ink bg-transparent hover:underline"
                 >
                   Sign in now
                 </button>
@@ -127,7 +127,7 @@ const Login = () => {
                     setIsSignUp(true);
                     setError('');
                   }}
-                  className="bg-transparent text-white hover:underline"
+                  className="text-ink bg-transparent hover:underline"
                 >
                   Sign up now
                 </button>

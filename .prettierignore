@@ -6,3 +6,4 @@ coverage
 .agents
 pnpm-lock.yaml
 package-lock.json
+src/shared/types/supabase-database.d.ts

@@ -16,10 +16,12 @@ const Input = forwardRef(
   ({ label, error, className = '', ...props }, ref) => {
     return (
       <div className="w-full">
-        {label && <label className="mb-1.5 block text-sm font-medium text-gray-300">{label}</label>}
+        {label && (
+          <label className="text-ink-muted mb-1.5 block text-sm font-medium">{label}</label>
+        )}
         <input
           ref={ref}
-          className={`bg-bg-elevated/70 focus:border-accent focus:ring-accent w-full rounded-md border border-gray-600 px-4 py-3 text-white placeholder-gray-400 transition-colors focus:ring-1 focus:outline-none ${className}`}
+          className={`bg-bg-elevated/70 border-border focus:border-accent focus:ring-accent text-ink placeholder:text-ink-faint w-full rounded-md border px-4 py-3 transition-colors focus:ring-1 focus:outline-none ${className}`}
           {...props}
         />
         {error && <p className="text-accent mt-1 text-sm">{error}</p>}

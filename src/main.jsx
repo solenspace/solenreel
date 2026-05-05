@@ -6,6 +6,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { store } from '@/app/store';
 import AuthSessionGate from '@/entities/user/auth-session-gate';
 import App from '@/App';
+import '@fontsource-variable/newsreader/index.css';
+import '@fontsource-variable/inter/index.css';
+import '@fontsource/jetbrains-mono/400.css';
 import './main.css';
 
 const queryClient = new QueryClient({
