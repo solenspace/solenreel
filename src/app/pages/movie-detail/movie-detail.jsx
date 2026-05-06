@@ -1,4 +1,5 @@
 // @ts-check
+import { useEffect, useRef } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMovieDetails, useMovieVideos } from '@/entities/movie/queries';
 import TrailerPlayer from '@/features/trailer/trailer-player';
@@ -51,6 +52,8 @@ const BackArrowIcon = () => (
 const MovieDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  /** @type {React.RefObject<HTMLElement | null>} */
+  const articleRef = useRef(null);
 
   // Two parallel queries:
   //   useMovieVideos  — lighter; paints the trailer as soon as it resolves.
@@ -70,6 +73,14 @@ const MovieDetail = () => {
   useKeyDown('Escape', () => {
     navigate(-1);
   });
+
+  // The autoplay YouTube iframe steals focus on mount; once focus is inside a
+  // cross-origin iframe, the parent's window-level keydown listener never sees
+  // the user's keystrokes. Pulling focus back onto the article root keeps `Esc`
+  // in the parent context until the user explicitly clicks into the player.
+  useEffect(() => {
+    articleRef.current?.focus({ preventScroll: true });
+  }, [id]);
 
   // 404 — invalid id, TMDB returned no payload.
   if (!detailsQuery.isPending && !details) {
@@ -95,7 +106,7 @@ const MovieDetail = () => {
   }
 
   return (
-    <article className="bg-bg relative w-full">
+    <article ref={articleRef} tabIndex={-1} className="bg-bg relative w-full focus:outline-none">
       <header className="bg-bg-elevated relative aspect-video w-full overflow-hidden">
         {trailerKey ? (
           <div className="absolute inset-0">

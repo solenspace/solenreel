@@ -179,6 +179,18 @@ describe('MovieDetail page', () => {
     expect(navigateMock).toHaveBeenCalledWith(-1);
   });
 
+  it('focuses the article root on mount so Esc reaches the parent before the iframe steals focus', () => {
+    useMovieDetailsMock.mockReturnValue(successQuery(mockDetails()));
+    useMovieVideosMock.mockReturnValue(successQuery([]));
+
+    renderPage();
+
+    const article = document.querySelector('article');
+    expect(article).not.toBeNull();
+    expect(article?.getAttribute('tabindex')).toBe('-1');
+    expect(document.activeElement).toBe(article);
+  });
+
   it('navigates back when the back-arrow button is clicked', () => {
     useMovieDetailsMock.mockReturnValue(successQuery(mockDetails()));
     useMovieVideosMock.mockReturnValue(successQuery([]));
