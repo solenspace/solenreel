@@ -2,14 +2,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { Provider } from 'react-redux';
-import { configureStore } from '@reduxjs/toolkit';
-import hoverReducer from '@/features/trailer/hover-store';
 
-const { navigateMock, usePopularMock, useMovieVideosMock } = vi.hoisted(() => ({
+const { navigateMock, usePopularMock } = vi.hoisted(() => ({
   navigateMock: vi.fn(),
   usePopularMock: vi.fn(),
-  useMovieVideosMock: vi.fn(() => ({ data: undefined, isError: false, isPending: false })),
 }));
 
 vi.mock('react-router-dom', async () => {
@@ -19,17 +15,12 @@ vi.mock('react-router-dom', async () => {
 
 vi.mock('@/entities/movie/queries', async (importOriginal) => {
   const actual = /** @type {object} */ (await importOriginal());
-  return { ...actual, usePopular: usePopularMock, useMovieVideos: useMovieVideosMock };
+  return { ...actual, usePopular: usePopularMock };
 });
 
 const Home = (await import('./home')).default;
 
-const renderHome = () =>
-  render(
-    <Provider store={configureStore({ reducer: { hover: hoverReducer } })}>
-      <Home />
-    </Provider>,
-  );
+const renderHome = () => render(<Home />);
 
 /** @typedef {import('@/entities/movie/types').Movie} Movie */
 /** @typedef {import('@/entities/movie/types').TmdbResponse<Movie>} MovieResponse */
