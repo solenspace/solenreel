@@ -218,6 +218,10 @@ export default [
     languageOptions: {
       globals: {
         ...globals.browser,
+        // Vitest runs in Node — expose `process` so tests can read non-VITE_
+        // env vars (e.g. SUPABASE_SERVICE_ROLE_KEY in events RLS test) that
+        // intentionally never reach the browser bundle.
+        process: 'readonly',
         describe: 'readonly',
         it: 'readonly',
         test: 'readonly',
@@ -239,6 +243,17 @@ export default [
   // import `@supabase/supabase-js` directly. Every other importer is a defect.
   {
     files: ['src/shared/api/supabase.js', 'src/shared/api/supabase.test.jsx'],
+    rules: {
+      'no-restricted-imports': 'off',
+    },
+  },
+
+  // Spec 14: the events RLS test needs an admin client built from the
+  // service-role key (gated on a non-VITE_ env var) to delete `auth.users`
+  // rows for the cascade case. This is the only legitimate non-singleton
+  // `@supabase/supabase-js` import in the tree.
+  {
+    files: ['src/entities/event/event.test.js'],
     rules: {
       'no-restricted-imports': 'off',
     },
