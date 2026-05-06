@@ -2,7 +2,18 @@
 import { describe, it, expect, vi } from 'vitest';
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
+import hoverReducer from '@/features/trailer/hover-store';
 import Row from './row';
+
+vi.mock('@/entities/movie/queries', async () => {
+  const actual = /** @type {object} */ (await vi.importActual('@/entities/movie/queries'));
+  return {
+    ...actual,
+    useMovieVideos: vi.fn(() => ({ data: undefined, isError: false, isPending: false })),
+  };
+});
 
 /** @typedef {import('@/entities/movie/types').Movie} Movie */
 
@@ -128,5 +139,17 @@ describe('Row', () => {
 
     expect(onTileClick).toHaveBeenCalledTimes(1);
     expect(onTileClick).toHaveBeenCalledWith(tiles[0]);
+  });
+
+  it('renders without crashing when hoverPlayer is enabled (HoverTile path)', () => {
+    const store = configureStore({ reducer: { hover: hoverReducer } });
+    render(
+      <Provider store={store}>
+        <Row title="Trending" tiles={mockMovies(3)} hoverPlayer onTileClick={vi.fn()} />
+      </Provider>,
+    );
+
+    expect(screen.getAllByRole('button')).toHaveLength(3);
+    expect(screen.queryByTestId('player')).toBeNull();
   });
 });

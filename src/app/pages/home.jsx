@@ -43,6 +43,7 @@ const Home = () => {
       title="Popular this week"
       tiles={query.data.results}
       variant="grid"
+      hoverPlayer
       onTileClick={(/** @type {Movie} */ movie) => navigate(`/movie/${movie.id}`)}
     />
   );

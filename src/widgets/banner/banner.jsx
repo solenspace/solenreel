@@ -7,7 +7,7 @@ import {
   backdropUrl,
   logoUrl,
 } from '@/entities/movie/queries';
-import TrailerPlayer from '@/shared/ui/trailer-player';
+import TrailerPlayer from '@/features/trailer/trailer-player';
 import Button from '@/shared/ui/button';
 import SkeletonBanner from '@/shared/ui/skeleton-banner';
 import { PlayIcon, InformationIcon } from '@/shared/ui/icons';

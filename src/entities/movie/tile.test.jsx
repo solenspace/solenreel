@@ -180,4 +180,38 @@ describe('Tile', () => {
     expect(screen.queryByRole('img')).toBeNull();
     expect(document.querySelector('[data-slot="poster-placeholder"]')).toBeInTheDocument();
   });
+
+  it('wraps the poster in a positioning frame when posterOverlay is provided', () => {
+    const movie = mockMovie();
+
+    render(
+      <Tile
+        movie={movie}
+        variant="grid"
+        posterOverlay={<div data-testid="overlay" />}
+      />,
+    );
+
+    expect(screen.getByTestId('overlay')).toBeInTheDocument();
+    expect(document.querySelector('[data-slot="poster-frame"]')).toBeInTheDocument();
+  });
+
+  it('omits the poster-frame wrapper when no posterOverlay is provided', () => {
+    const movie = mockMovie();
+
+    render(<Tile movie={movie} variant="grid" />);
+
+    expect(document.querySelector('[data-slot="poster-frame"]')).toBeNull();
+  });
+
+  it('forwards rootRef to the underlying root element', () => {
+    const movie = mockMovie();
+    /** @type {{ current: HTMLElement | null }} */
+    const ref = { current: null };
+
+    render(<Tile movie={movie} variant="grid" onClick={vi.fn()} rootRef={ref} />);
+
+    expect(ref.current).toBeInstanceOf(HTMLButtonElement);
+    expect(ref.current?.getAttribute('data-tile')).toBe('');
+  });
 });
