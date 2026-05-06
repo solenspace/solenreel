@@ -1,128 +1,50 @@
 // @ts-check
-import { useState, useMemo } from 'react';
-import {
-  useTrending,
-  useOriginals,
-  useTopRated,
-  useByGenre,
-  GENRES,
-} from '@/entities/movie/queries';
-import Banner from '@/widgets/banner/banner';
-import BannerAmbient from '@/widgets/banner/banner-ambient';
+import { useNavigate } from 'react-router-dom';
+import { usePopular } from '@/entities/movie/queries';
 import Row from '@/widgets/row/row';
-import MovieModal from '@/features/movie-modal/movie-modal';
-import SkeletonBanner from '@/shared/ui/skeleton-banner';
 import SkeletonRow from '@/shared/ui/skeleton-row';
+import ErrorFallback from '@/shared/ui/error-fallback';
+import { useDocumentTitle } from '@/shared/lib/use-document-title';
+import { useLoadingTooLong } from '@/shared/lib/use-loading-too-long';
 
 /** @typedef {import('@/entities/movie/types').Movie} Movie */
-/** @typedef {import('@/entities/movie/tile-variants').TileVariant} TileVariant */
 
 const Home = () => {
-  const trending = useTrending();
-  const originals = useOriginals();
-  const topRated = useTopRated();
-  const action = useByGenre(GENRES.ACTION);
-  const comedy = useByGenre(GENRES.COMEDY);
-  const horror = useByGenre(GENRES.HORROR);
-  const romance = useByGenre(GENRES.ROMANCE);
-  const documentary = useByGenre(GENRES.DOCUMENTARY);
+  const navigate = useNavigate();
+  const query = usePopular(1, { retry: 1 });
+  const longPending = useLoadingTooLong(query.isPending, 800);
 
-  /** @type {[Movie | null, React.Dispatch<React.SetStateAction<Movie | null>>]} */
-  const [selectedMovie, setSelectedMovie] = useState(/** @type {Movie | null} */ (null));
+  useDocumentTitle('reel — for you');
 
-  const featuredMovie = useMemo(() => {
-    const trendingResults = trending.data?.results;
-    if (!trendingResults?.length) return null;
-    return trendingResults[Math.floor(Math.random() * trendingResults.length)];
-  }, [trending.data]);
+  if (query.isError) {
+    return (
+      <ErrorFallback
+        error={new Error("the movies aren't loading. trying again.")}
+        resetErrorBoundary={() => {
+          query.refetch();
+        }}
+      />
+    );
+  }
 
-  /**
-   * @type {Array<{
-   *   title: string,
-   *   tiles: Movie[] | undefined,
-   *   isLoading: boolean,
-   *   variant: TileVariant,
-   * }>}
-   */
-  const rows = [
-    {
-      title: 'Trending Now',
-      tiles: trending.data?.results,
-      isLoading: trending.isLoading,
-      variant: 'grid',
-    },
-    {
-      title: 'Originals',
-      tiles: originals.data?.results,
-      isLoading: originals.isLoading,
-      variant: 'list',
-    },
-    {
-      title: 'Top Rated',
-      tiles: topRated.data?.results,
-      isLoading: topRated.isLoading,
-      variant: 'grid',
-    },
-    {
-      title: 'Action Movies',
-      tiles: action.data?.results,
-      isLoading: action.isLoading,
-      variant: 'grid',
-    },
-    {
-      title: 'Comedy Movies',
-      tiles: comedy.data?.results,
-      isLoading: comedy.isLoading,
-      variant: 'grid',
-    },
-    {
-      title: 'Horror Movies',
-      tiles: horror.data?.results,
-      isLoading: horror.isLoading,
-      variant: 'grid',
-    },
-    {
-      title: 'Romance Movies',
-      tiles: romance.data?.results,
-      isLoading: romance.isLoading,
-      variant: 'grid',
-    },
-    {
-      title: 'Documentaries',
-      tiles: documentary.data?.results,
-      isLoading: documentary.isLoading,
-      variant: 'grid',
-    },
-  ];
+  if (query.isPending) {
+    if (longPending) {
+      return (
+        <div className="flex min-h-[60vh] items-center justify-center px-6">
+          <p className="text-accent display text-2xl">reel is loading</p>
+        </div>
+      );
+    }
+    return <SkeletonRow />;
+  }
 
   return (
-    <div className="relative pb-16">
-      <BannerAmbient movie={featuredMovie} isTrailerPlaying={false} />
-
-      {trending.isLoading ? (
-        <SkeletonBanner />
-      ) : (
-        <Banner movie={featuredMovie} onMoreInfo={(movie) => setSelectedMovie(movie)} />
-      )}
-
-      <div className="relative z-10 -mt-16">
-        {rows.map((row) =>
-          row.isLoading ? (
-            <SkeletonRow key={row.title} />
-          ) : (
-            <Row
-              key={row.title}
-              title={row.title}
-              tiles={row.tiles ?? []}
-              variant={row.variant}
-              onTileClick={(movie) => setSelectedMovie(movie)}
-            />
-          ),
-        )}
-      </div>
-
-      {selectedMovie && <MovieModal movie={selectedMovie} onClose={() => setSelectedMovie(null)} />}
-    </div>
+    <Row
+      title="Popular this week"
+      tiles={query.data.results}
+      variant="grid"
+      onTileClick={(/** @type {Movie} */ movie) => navigate(`/movie/${movie.id}`)}
+    />
   );
 };
 
