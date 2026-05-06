@@ -6,7 +6,9 @@ import { RouterProvider, createMemoryRouter } from 'react-router-dom';
 
 vi.mock('@/app/pages/home', () => ({ default: () => <div>Home page</div> }));
 vi.mock('@/app/pages/search', () => ({ default: () => <div>Search page</div> }));
-vi.mock('@/app/pages/movie', () => ({ default: () => <div>Movie placeholder</div> }));
+vi.mock('@/app/pages/movie-detail/movie-detail', () => ({
+  default: () => <div>Movie detail page</div>,
+}));
 vi.mock('@/app/pages/profile', () => ({ default: () => <div>Profile page</div> }));
 vi.mock('@/app/pages/welcome', () => ({ default: () => <div>Welcome page</div> }));
 vi.mock('@/app/pages/login', () => ({ default: () => <div>Login page</div> }));
@@ -56,7 +58,7 @@ describe('router — authenticated routes under AppLayout', () => {
   it.each([
     { path: '/', expected: /Home page/ },
     { path: '/search', expected: /Search page/ },
-    { path: '/movie/123', expected: /Movie placeholder/ },
+    { path: '/movie/123', expected: /Movie detail page/ },
     { path: '/profile', expected: /Profile page/ },
   ])('renders $path', async ({ path, expected }) => {
     renderAt({ path });

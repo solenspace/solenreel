@@ -7,7 +7,7 @@ import LoadingScreen from '@/shared/ui/loading-screen';
 
 const Home = lazy(() => import('@/app/pages/home'));
 const Search = lazy(() => import('@/app/pages/search'));
-const Movie = lazy(() => import('@/app/pages/movie'));
+const MovieDetail = lazy(() => import('@/app/pages/movie-detail/movie-detail'));
 const Profile = lazy(() => import('@/app/pages/profile'));
 const Login = lazy(() => import('@/app/pages/login'));
 const Welcome = lazy(() => import('@/app/pages/welcome'));
@@ -31,7 +31,7 @@ export const routes = [
     children: [
       { index: true, element: withSuspense(Home) },
       { path: 'search', element: withSuspense(Search) },
-      { path: 'movie/:id', element: withSuspense(Movie) },
+      { path: 'movie/:id', element: withSuspense(MovieDetail) },
       { path: 'profile', element: withSuspense(Profile) },
     ],
   },
