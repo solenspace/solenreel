@@ -12,6 +12,9 @@ const Profile = lazy(() => import('@/app/pages/profile'));
 const Login = lazy(() => import('@/app/pages/login'));
 const Welcome = lazy(() => import('@/app/pages/welcome'));
 const DevTokens = import.meta.env.DEV ? lazy(() => import('@/app/pages/_dev/tokens')) : null;
+const DevTileGallery = import.meta.env.DEV
+  ? lazy(() => import('@/app/pages/_dev/tile-gallery'))
+  : null;
 
 /** @param {React.ComponentType} Component */
 const withSuspense = (Component) => (
@@ -41,6 +44,9 @@ export const routes = [
     ],
   },
   ...(DevTokens ? [{ path: '/dev/tokens', element: withSuspense(DevTokens) }] : []),
+  ...(DevTileGallery
+    ? [{ path: '/dev/tile-gallery', element: withSuspense(DevTileGallery) }]
+    : []),
 ];
 
 const router = createBrowserRouter(routes);

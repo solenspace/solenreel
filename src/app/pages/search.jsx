@@ -1,8 +1,8 @@
 // @ts-check
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { useSearchMulti, posterUrl } from '@/entities/movie/queries';
+import { useSearchMulti } from '@/entities/movie/queries';
+import Tile from '@/entities/movie/tile';
 import MovieModal from '@/features/movie-modal/movie-modal';
 
 /** @typedef {import('@/entities/movie/types').Movie} Movie */
@@ -49,44 +49,23 @@ const Search = () => {
           <p className="text-ink-muted mb-4 text-sm">
             {filteredResults.length} results for &quot;{query}&quot;
           </p>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6"
-          >
-            {filteredResults.map(/** @param {Movie} item */ (item) => {
-              const url = posterUrl(item.posterPath);
-              return (
-                <motion.div
-                  key={item.id}
-                  whileHover={{ scale: 1.05 }}
-                  className="group cursor-pointer"
-                  onClick={() => setSelectedMovie(item)}
-                >
-                  {url && (
-                    <img
-                      src={url}
-                      alt={item.title}
-                      className="w-full rounded-md object-cover transition-all group-hover:shadow-xl group-hover:ring-1 group-hover:ring-white/20"
-                      loading="lazy"
-                    />
-                  )}
-                  <p className="text-ink mt-2 truncate text-sm">{item.title}</p>
-                  <p className="text-ink-muted text-xs">
-                    {item.year > 0 ? item.year : ''}
-                    {item.voteAverage > 0 && ` · ${Math.round(item.voteAverage * 10)}%`}
-                  </p>
-                </motion.div>
-              );
-            })}
-          </motion.div>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+            {filteredResults.map(
+              /** @param {Movie} item */
+              (item) => (
+                <Tile key={item.id} movie={item} variant="grid" onClick={setSelectedMovie} />
+              ),
+            )}
+          </div>
         </>
       )}
 
       {!isLoading && query.length >= 2 && filteredResults.length === 0 && (
         <div className="py-24 text-center">
           <p className="text-ink-muted text-lg">No results found for &quot;{query}&quot;</p>
-          <p className="text-ink-faint mt-2 text-sm">Try different keywords or check the spelling</p>
+          <p className="text-ink-faint mt-2 text-sm">
+            Try different keywords or check the spelling
+          </p>
         </div>
       )}
 
