@@ -9,11 +9,13 @@ import {
 } from '@/entities/movie/queries';
 import Banner from '@/widgets/banner/banner';
 import BannerAmbient from '@/widgets/banner/banner-ambient';
-import MovieRow from '@/widgets/movie-row/movie-row';
+import Row from '@/widgets/row/row';
 import MovieModal from '@/features/movie-modal/movie-modal';
 import SkeletonBanner from '@/shared/ui/skeleton-banner';
+import SkeletonRow from '@/shared/ui/skeleton-row';
 
 /** @typedef {import('@/entities/movie/types').Movie} Movie */
+/** @typedef {import('@/entities/movie/tile-variants').TileVariant} TileVariant */
 
 const Home = () => {
   const trending = useTrending();
@@ -34,20 +36,63 @@ const Home = () => {
     return trendingResults[Math.floor(Math.random() * trendingResults.length)];
   }, [trending.data]);
 
+  /**
+   * @type {Array<{
+   *   title: string,
+   *   tiles: Movie[] | undefined,
+   *   isLoading: boolean,
+   *   variant: TileVariant,
+   * }>}
+   */
   const rows = [
-    { title: 'Trending Now', movies: trending.data?.results, isLoading: trending.isLoading },
+    {
+      title: 'Trending Now',
+      tiles: trending.data?.results,
+      isLoading: trending.isLoading,
+      variant: 'grid',
+    },
     {
       title: 'Originals',
-      movies: originals.data?.results,
+      tiles: originals.data?.results,
       isLoading: originals.isLoading,
-      isLargeRow: true,
+      variant: 'list',
     },
-    { title: 'Top Rated', movies: topRated.data?.results, isLoading: topRated.isLoading },
-    { title: 'Action Movies', movies: action.data?.results, isLoading: action.isLoading },
-    { title: 'Comedy Movies', movies: comedy.data?.results, isLoading: comedy.isLoading },
-    { title: 'Horror Movies', movies: horror.data?.results, isLoading: horror.isLoading },
-    { title: 'Romance Movies', movies: romance.data?.results, isLoading: romance.isLoading },
-    { title: 'Documentaries', movies: documentary.data?.results, isLoading: documentary.isLoading },
+    {
+      title: 'Top Rated',
+      tiles: topRated.data?.results,
+      isLoading: topRated.isLoading,
+      variant: 'grid',
+    },
+    {
+      title: 'Action Movies',
+      tiles: action.data?.results,
+      isLoading: action.isLoading,
+      variant: 'grid',
+    },
+    {
+      title: 'Comedy Movies',
+      tiles: comedy.data?.results,
+      isLoading: comedy.isLoading,
+      variant: 'grid',
+    },
+    {
+      title: 'Horror Movies',
+      tiles: horror.data?.results,
+      isLoading: horror.isLoading,
+      variant: 'grid',
+    },
+    {
+      title: 'Romance Movies',
+      tiles: romance.data?.results,
+      isLoading: romance.isLoading,
+      variant: 'grid',
+    },
+    {
+      title: 'Documentaries',
+      tiles: documentary.data?.results,
+      isLoading: documentary.isLoading,
+      variant: 'grid',
+    },
   ];
 
   return (
@@ -61,16 +106,19 @@ const Home = () => {
       )}
 
       <div className="relative z-10 -mt-16">
-        {rows.map((row) => (
-          <MovieRow
-            key={row.title}
-            title={row.title}
-            movies={row.movies}
-            isLoading={row.isLoading}
-            isLargeRow={row.isLargeRow}
-            onMovieClick={(movie) => setSelectedMovie(movie)}
-          />
-        ))}
+        {rows.map((row) =>
+          row.isLoading ? (
+            <SkeletonRow key={row.title} />
+          ) : (
+            <Row
+              key={row.title}
+              title={row.title}
+              tiles={row.tiles ?? []}
+              variant={row.variant}
+              onTileClick={(movie) => setSelectedMovie(movie)}
+            />
+          ),
+        )}
       </div>
 
       {selectedMovie && <MovieModal movie={selectedMovie} onClose={() => setSelectedMovie(null)} />}
