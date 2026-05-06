@@ -6,7 +6,7 @@
  * the running local Supabase stack and writes two protected artifacts:
  *
  *   src/shared/types/supabase-database.d.ts  (raw `Database` type from CLI)
- *   src/shared/types/supabase.js             (JSDoc shim with Profile typedef)
+ *   src/shared/types/supabase.js             (JSDoc shim with Profile + Event typedefs)
  *
  * Both files start with `// GENERATED — DO NOT EDIT.` so the
  * `reel/supabase-generated-check` ESLint rule keeps them out of human edits.
@@ -35,6 +35,10 @@ const JS_SHIM = `${HEADER}// @ts-check
  * @typedef {Database['public']['Tables']['profiles']['Row']} Profile
  * @typedef {Database['public']['Tables']['profiles']['Insert']} ProfileInsert
  * @typedef {Database['public']['Tables']['profiles']['Update']} ProfileUpdate
+ * @typedef {Database['public']['Tables']['events']['Row']} Event
+ * @typedef {Database['public']['Tables']['events']['Insert']} EventInsert
+ * @typedef {Database['public']['Tables']['events']['Update']} EventUpdate
+ * @typedef {Database['public']['Enums']['event_kind']} EventKind
  */
 
 export {};
