@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Tile from '@/entities/movie/tile';
 import { tileVariants } from '@/entities/movie/tile-variants';
+import HoverTile from '@/features/trailer/hover-tile';
 
 /** @typedef {import('@/entities/movie/types').Movie} Movie */
 /** @typedef {import('@/entities/movie/tile-variants').TileVariant} TileVariant */
@@ -13,17 +14,36 @@ import { tileVariants } from '@/entities/movie/tile-variants';
 const EAGER_COUNT = 12;
 
 /**
+ * Choose between presentational `Tile` and the hover-aware `HoverTile`
+ * (spec 12). Centralised here so eager and lazy slots stay in sync.
+ *
+ * @param {{
+ *   movie: Movie,
+ *   variant: TileVariant,
+ *   onClick?: (movie: Movie) => void,
+ *   hoverPlayer: boolean,
+ * }} props
+ */
+const RenderedTile = ({ movie, variant, onClick, hoverPlayer }) =>
+  hoverPlayer ? (
+    <HoverTile movie={movie} variant={variant} onClick={onClick} />
+  ) : (
+    <Tile movie={movie} variant={variant} onClick={onClick} />
+  );
+
+/**
  * Eagerly-mounted tile wrapped in a list-item with scroll-snap alignment.
  *
  * @param {{
  *   movie: Movie,
  *   variant: TileVariant,
  *   onClick?: (movie: Movie) => void,
+ *   hoverPlayer: boolean,
  * }} props
  */
-const TileSlot = ({ movie, variant, onClick }) => (
+const TileSlot = ({ movie, variant, onClick, hoverPlayer }) => (
   <div role="listitem" className="shrink-0" style={{ scrollSnapAlign: 'start' }}>
-    <Tile movie={movie} variant={variant} onClick={onClick} />
+    <RenderedTile movie={movie} variant={variant} onClick={onClick} hoverPlayer={hoverPlayer} />
   </div>
 );
 
@@ -37,9 +57,10 @@ const TileSlot = ({ movie, variant, onClick }) => (
  *   movie: Movie,
  *   variant: TileVariant,
  *   onClick?: (movie: Movie) => void,
+ *   hoverPlayer: boolean,
  * }} props
  */
-const LazyTileSlot = ({ movie, variant, onClick }) => {
+const LazyTileSlot = ({ movie, variant, onClick, hoverPlayer }) => {
   /** @type {React.RefObject<HTMLDivElement | null>} */
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
@@ -69,7 +90,14 @@ const LazyTileSlot = ({ movie, variant, onClick }) => {
       className={visible ? 'shrink-0' : tileVariants[variant].placeholderClass}
       style={{ scrollSnapAlign: 'start' }}
     >
-      {visible && <Tile movie={movie} variant={variant} onClick={onClick} />}
+      {visible && (
+        <RenderedTile
+          movie={movie}
+          variant={variant}
+          onClick={onClick}
+          hoverPlayer={hoverPlayer}
+        />
+      )}
     </div>
   );
 };
@@ -103,16 +131,30 @@ const handleKeyDown = (e) => {
  * `<Tile>` instances (tiles past index 12 mount on scroll-into-view via
  * IntersectionObserver). Returns `null` when `tiles` is empty.
  *
+ * `hoverPlayer` (spec 12) opts every tile in the row into hover-driven trailer
+ * autoplay via the feature-level `<HoverTile>` wrapper. Pages that want
+ * editorial tiles without motion (search results, profile) pass `false`
+ * (default).
+ *
  * @param {{
  *   title: string,
  *   caption?: string,
  *   badge?: React.ReactNode,
  *   tiles: Movie[],
  *   variant?: TileVariant,
+ *   hoverPlayer?: boolean,
  *   onTileClick?: (movie: Movie) => void,
  * }} props
  */
-const Row = ({ title, caption, badge, tiles, variant = 'grid', onTileClick }) => {
+const Row = ({
+  title,
+  caption,
+  badge,
+  tiles,
+  variant = 'grid',
+  hoverPlayer = false,
+  onTileClick,
+}) => {
   if (tiles.length === 0) return null;
   return (
     <section className="my-8 px-6 md:px-12">
@@ -130,9 +172,21 @@ const Row = ({ title, caption, badge, tiles, variant = 'grid', onTileClick }) =>
       >
         {tiles.map((movie, i) =>
           i < EAGER_COUNT ? (
-            <TileSlot key={movie.id} movie={movie} variant={variant} onClick={onTileClick} />
+            <TileSlot
+              key={movie.id}
+              movie={movie}
+              variant={variant}
+              onClick={onTileClick}
+              hoverPlayer={hoverPlayer}
+            />
           ) : (
-            <LazyTileSlot key={movie.id} movie={movie} variant={variant} onClick={onTileClick} />
+            <LazyTileSlot
+              key={movie.id}
+              movie={movie}
+              variant={variant}
+              onClick={onTileClick}
+              hoverPlayer={hoverPlayer}
+            />
           ),
         )}
       </div>

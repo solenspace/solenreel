@@ -10,6 +10,10 @@ import { tileVariants } from '@/entities/movie/tile-variants';
  * @typedef {object} TileContextValue
  * @property {Movie} movie
  * @property {TileVariant} variant
+ * @property {React.ReactNode} posterOverlay
+ *   Optional overlay rendered absolutely on top of the poster (spec 12 hover
+ *   trailer; spec 18 reasoning chip; etc.). Tile entity stays presentational —
+ *   it only positions whatever node the consumer hands it.
  */
 
 /** @type {React.Context<TileContextValue | null>} */
@@ -28,25 +32,30 @@ const useTileContext = () => {
 const TileBody = ({ children }) => <div className="min-w-0 flex-1">{children}</div>;
 
 const TilePoster = () => {
-  const { movie, variant } = useTileContext();
+  const { movie, variant, posterOverlay } = useTileContext();
   const url = posterUrl(movie.posterPath, tileVariants[variant].posterSize);
-  if (!url) {
-    return (
-      <div
-        className={`${tileVariants[variant].posterClass} bg-bg-elevated`}
-        aria-hidden="true"
-        data-slot="poster-placeholder"
-      />
-    );
-  }
-  return (
+  const posterClass = tileVariants[variant].posterClass;
+  const posterImg = url ? (
     <img
       src={url}
       alt={movie.title}
       loading="lazy"
-      className={`${tileVariants[variant].posterClass} shrink-0`}
+      className={`${posterClass} shrink-0`}
       data-slot="poster"
     />
+  ) : (
+    <div
+      className={`${posterClass} bg-bg-elevated`}
+      aria-hidden="true"
+      data-slot="poster-placeholder"
+    />
+  );
+  if (!posterOverlay) return posterImg;
+  return (
+    <div className={`${posterClass.includes('shrink-0') ? '' : 'shrink-0'} relative`} data-slot="poster-frame">
+      {posterImg}
+      {posterOverlay}
+    </div>
   );
 };
 
@@ -193,29 +202,46 @@ const DefaultLayout = () => {
 
 /**
  * Editorial movie tile. Compound component with a shared `TileContext`
- * exposing `{ movie, variant }`. When `children` is omitted, a per-variant
- * default layout renders. When `children` is supplied, the consumer composes
- * slots explicitly (see spec 10 §"Compound-component shape").
+ * exposing `{ movie, variant, posterOverlay }`. When `children` is omitted, a
+ * per-variant default layout renders. When `children` is supplied, the
+ * consumer composes slots explicitly (see spec 10 §"Compound-component
+ * shape").
  *
  * Renders as a `<button>` when `onClick` is provided (interactive), otherwise
  * as an `<article>` (presentational). Focus styling inherits the global
  * `:focus-visible` ring from `src/main.css`.
  *
+ * `posterOverlay` (spec 12) is positioned absolutely over the poster and lets
+ * higher layers (`features/trailer/hover-tile.jsx`) drop in a hover trailer
+ * without the entity gaining a feature dependency. `rootRef` exposes the
+ * underlying root element so the hover hook can install pointer/IO listeners
+ * on the same node the user interacts with.
+ *
  * @param {{
  *   movie: Movie,
  *   variant?: TileVariant,
  *   onClick?: (movie: Movie) => void,
+ *   posterOverlay?: React.ReactNode,
+ *   rootRef?: React.Ref<HTMLElement | null>,
  *   children?: React.ReactNode,
  * }} props
  */
-const TileBase = ({ movie, variant = 'grid', onClick, children }) => {
+const TileBase = ({
+  movie,
+  variant = 'grid',
+  onClick,
+  posterOverlay = null,
+  rootRef,
+  children,
+}) => {
   const className = tileVariants[variant].root;
   const inner = children ?? <DefaultLayout />;
   return (
-    <TileContext.Provider value={{ movie, variant }}>
+    <TileContext.Provider value={{ movie, variant, posterOverlay }}>
       {typeof onClick === 'function' ? (
         <button
           type="button"
+          ref={/** @type {React.Ref<HTMLButtonElement>} */ (rootRef)}
           onClick={() => onClick(movie)}
           data-tile=""
           data-variant={variant}
@@ -224,7 +250,12 @@ const TileBase = ({ movie, variant = 'grid', onClick, children }) => {
           {inner}
         </button>
       ) : (
-        <article data-tile="" data-variant={variant} className={className}>
+        <article
+          ref={/** @type {React.Ref<HTMLElement>} */ (rootRef)}
+          data-tile=""
+          data-variant={variant}
+          className={className}
+        >
           {inner}
         </article>
       )}

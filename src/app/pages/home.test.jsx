@@ -20,6 +20,8 @@ vi.mock('@/entities/movie/queries', async (importOriginal) => {
 
 const Home = (await import('./home')).default;
 
+const renderHome = () => render(<Home />);
+
 /** @typedef {import('@/entities/movie/types').Movie} Movie */
 /** @typedef {import('@/entities/movie/types').TmdbResponse<Movie>} MovieResponse */
 
@@ -91,7 +93,7 @@ describe('Home page', () => {
   it('renders the skeleton row while the popular query is pending', () => {
     usePopularMock.mockReturnValue(mockQuery({ isPending: true }));
 
-    render(<Home />);
+    renderHome();
 
     expect(screen.getByTestId('skeleton-row')).toBeInTheDocument();
   });
@@ -100,7 +102,7 @@ describe('Home page', () => {
     const tiles = [mockMovie({ id: 1, title: 'Tile One' })];
     usePopularMock.mockReturnValue(successQuery(tiles));
 
-    render(<Home />);
+    renderHome();
 
     expect(
       screen.getByRole('heading', { level: 2, name: /Popular this week/i }),
@@ -115,7 +117,7 @@ describe('Home page', () => {
     usePopularMock.mockReturnValue(successQuery(tiles));
     const user = userEvent.setup();
 
-    render(<Home />);
+    renderHome();
     await user.click(screen.getByRole('button', { name: /Tile One/i }));
 
     expect(navigateMock).toHaveBeenCalledTimes(1);
@@ -125,7 +127,7 @@ describe('Home page', () => {
   it('renders nothing user-facing when the popular results array is empty', () => {
     usePopularMock.mockReturnValue(successQuery([]));
 
-    render(<Home />);
+    renderHome();
 
     expect(screen.queryByRole('heading', { name: /Popular this week/i })).not.toBeInTheDocument();
     expect(screen.queryByTestId('skeleton-row')).not.toBeInTheDocument();
@@ -138,7 +140,7 @@ describe('Home page', () => {
     );
     const user = userEvent.setup();
 
-    render(<Home />);
+    renderHome();
     await user.click(screen.getByRole('button', { name: /try again/i }));
 
     expect(screen.getByText("the movies aren't loading. trying again.")).toBeInTheDocument();
@@ -151,7 +153,7 @@ describe('Home page', () => {
     vi.useFakeTimers();
     usePopularMock.mockReturnValue(mockQuery({ isPending: true }));
 
-    render(<Home />);
+    renderHome();
     act(() => {
       vi.advanceTimersByTime(799);
     });
@@ -164,7 +166,7 @@ describe('Home page', () => {
     vi.useFakeTimers();
     usePopularMock.mockReturnValue(mockQuery({ isPending: true }));
 
-    render(<Home />);
+    renderHome();
     act(() => {
       vi.advanceTimersByTime(801);
     });
@@ -176,7 +178,7 @@ describe('Home page', () => {
   it('sets the document title to "reel — for you" on mount', () => {
     usePopularMock.mockReturnValue(mockQuery({ isPending: true }));
 
-    render(<Home />);
+    renderHome();
 
     expect(document.title).toBe('reel — for you');
   });
