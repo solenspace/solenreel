@@ -259,6 +259,16 @@ export default [
     },
   },
 
+  // Spec 16: the recommendations RLS test needs the same admin client —
+  // clients are read-only on this table, so service-role-insert + items-cap
+  // + cascade are all admin-driven. Same justification as spec 14.
+  {
+    files: ['src/entities/recommendation/recommendation.test.js'],
+    rules: {
+      'no-restricted-imports': 'off',
+    },
+  },
+
   // Spec 09 invariant: only the TMDB singleton (and its test) may import
   // `axios` directly. Every other importer is routed through the typed hooks
   // at `@/entities/movie/queries`.
