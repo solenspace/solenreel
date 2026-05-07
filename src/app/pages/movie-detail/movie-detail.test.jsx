@@ -2,12 +2,20 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
+import hoverReducer from '@/features/trailer/hover-store';
+import userReducer from '@/entities/user/user-slice';
 
 const { navigateMock, useMovieDetailsMock, useMovieVideosMock, useByGenreMock } = vi.hoisted(() => ({
   navigateMock: vi.fn(),
   useMovieDetailsMock: vi.fn(),
   useMovieVideosMock: vi.fn(),
   useByGenreMock: vi.fn(),
+}));
+
+vi.mock('@/shared/api/supabase', () => ({
+  supabase: { from: vi.fn(() => ({ insert: vi.fn().mockResolvedValue({ error: null }) })) },
 }));
 
 vi.mock('react-router-dom', async () => {
@@ -110,11 +118,37 @@ const mockQuery = (overrides = {}) => ({
 const successQuery = (data) =>
   mockQuery({ data, isPending: false, isError: false, isSuccess: true });
 
+/** @typedef {import('@/shared/types/auth').Session} Session */
+
+const fakeSession = /** @type {Session} */ (
+  /** @type {unknown} */ ({
+    user: { id: 'user-1' },
+    access_token: 'jwt-1',
+    token_type: 'bearer',
+    expires_in: 3600,
+    refresh_token: 'r',
+  })
+);
+
+const makeStore = () =>
+  configureStore({
+    reducer: { hover: hoverReducer, user: userReducer },
+    preloadedState: {
+      user: {
+        session: fakeSession,
+        status: /** @type {const} */ ('authenticated'),
+        error: null,
+      },
+    },
+  });
+
 const renderPage = () =>
   render(
-    <MemoryRouter initialEntries={['/movie/550']}>
-      <MovieDetail />
-    </MemoryRouter>,
+    <Provider store={makeStore()}>
+      <MemoryRouter initialEntries={['/movie/550']}>
+        <MovieDetail />
+      </MemoryRouter>
+    </Provider>,
   );
 
 describe('MovieDetail page', () => {

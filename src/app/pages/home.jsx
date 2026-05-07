@@ -6,6 +6,7 @@ import SkeletonRow from '@/shared/ui/skeleton-row';
 import ErrorFallback from '@/shared/ui/error-fallback';
 import { useDocumentTitle } from '@/shared/lib/use-document-title';
 import { useLoadingTooLong } from '@/shared/lib/use-loading-too-long';
+import { TrackingProvider } from '@/features/click-tracker/tracking-provider';
 
 /** @typedef {import('@/entities/movie/types').Movie} Movie */
 
@@ -39,12 +40,14 @@ const Home = () => {
   }
 
   return (
-    <Row
-      title="Popular this week"
-      tiles={query.data.results}
-      variant="grid"
-      onTileClick={(/** @type {Movie} */ movie) => navigate(`/movie/${movie.id}`)}
-    />
+    <TrackingProvider source="home">
+      <Row
+        title="Popular this week"
+        tiles={query.data.results}
+        variant="grid"
+        onTileClick={(/** @type {Movie} */ movie) => navigate(`/movie/${movie.id}`)}
+      />
+    </TrackingProvider>
   );
 };
 
