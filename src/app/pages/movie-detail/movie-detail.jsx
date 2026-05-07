@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useMovieDetails, useMovieVideos } from '@/entities/movie/queries';
 import TrailerPlayer from '@/features/trailer/trailer-player';
+import { TrackingProvider } from '@/features/click-tracker/tracking-provider';
 import SkeletonBanner from '@/shared/ui/skeleton-banner';
 import { useDocumentTitle } from '@/shared/lib/use-document-title';
 import { useLoadingTooLong } from '@/shared/lib/use-loading-too-long';
@@ -115,6 +116,7 @@ const MovieDetail = () => {
               playing
               muted={false}
               mode="full"
+              tmdbId={details.id}
               className="h-full w-full"
             />
           </div>
@@ -159,10 +161,12 @@ const MovieDetail = () => {
       </section>
 
       {MORE_LIKE_THIS_ENABLED ? (
-        <MoreLikeThisRow
-          genreId={details.genreIds?.[0] ?? null}
-          onTileClick={(/** @type {Movie} */ movie) => navigate(`/movie/${movie.id}`)}
-        />
+        <TrackingProvider source="movie-detail">
+          <MoreLikeThisRow
+            genreId={details.genreIds?.[0] ?? null}
+            onTileClick={(/** @type {Movie} */ movie) => navigate(`/movie/${movie.id}`)}
+          />
+        </TrackingProvider>
       ) : null}
     </article>
   );

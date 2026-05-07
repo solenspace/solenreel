@@ -1,5 +1,7 @@
 // @ts-check
+import { useCallback, useRef } from 'react';
 import ReactPlayer from 'react-player/youtube';
+import { useClickTracker } from '@/features/click-tracker/use-click-tracker';
 
 /**
  * @typedef {'full' | 'overlay'} TrailerPlayerMode
@@ -13,6 +15,10 @@ import ReactPlayer from 'react-player/youtube';
  *   movie-modal hero. `overlay` — absolutely-positioned over a sibling poster
  *   at 0.7 opacity with `pointer-events-none` so the parent button continues
  *   to capture clicks. Used by the spec-12 hover-player slot.
+ * @property {number} [tmdbId]
+ *   When set, the player auto-emits `trailer_play` on first-frame start and
+ *   `trailer_complete` (with `duration_ms` measured from start) on `onEnded`.
+ *   Leave undefined for presentational use (no telemetry).
  * @property {() => void} [onEnded]
  * @property {() => void} [onReady]
  * @property {(error?: unknown) => void} [onError]
@@ -29,12 +35,37 @@ const TrailerPlayer = ({
   playing = false,
   muted = true,
   mode = 'full',
+  tmdbId,
   onEnded,
   onReady,
   onError,
   className = '',
   style = {},
 }) => {
+  const { track } = useClickTracker();
+  /** @type {React.RefObject<number | null>} */
+  const playStartedAtRef = useRef(null);
+
+  // `onStart` (first-frame play) is the right tracking moment, not `onReady`
+  // (player loaded but possibly still buffering). Capture the wall-clock
+  // start so `trailer_complete` can report the elapsed watch duration.
+  const handleStart = useCallback(() => {
+    if (tmdbId != null) {
+      playStartedAtRef.current = Date.now();
+      track('trailer_play', tmdbId, { mode });
+    }
+  }, [tmdbId, mode, track]);
+
+  const handleEnded = useCallback(() => {
+    if (tmdbId != null && playStartedAtRef.current !== null) {
+      track('trailer_complete', tmdbId, {
+        mode,
+        duration_ms: Date.now() - playStartedAtRef.current,
+      });
+    }
+    onEnded?.();
+  }, [tmdbId, mode, track, onEnded]);
+
   if (!videoKey) return null;
 
   const isOverlay = mode === 'overlay';
@@ -52,7 +83,8 @@ const TrailerPlayer = ({
         playing={playing}
         muted={muted}
         controls={false}
-        onEnded={onEnded}
+        onStart={handleStart}
+        onEnded={handleEnded}
         onReady={onReady}
         onError={onError}
         width="100%"

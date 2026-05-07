@@ -2,10 +2,18 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
+import hoverReducer from '@/features/trailer/hover-store';
+import userReducer from '@/entities/user/user-slice';
 
 const { navigateMock, usePopularMock } = vi.hoisted(() => ({
   navigateMock: vi.fn(),
   usePopularMock: vi.fn(),
+}));
+
+vi.mock('@/shared/api/supabase', () => ({
+  supabase: { from: vi.fn(() => ({ insert: vi.fn().mockResolvedValue({ error: null }) })) },
 }));
 
 vi.mock('react-router-dom', async () => {
@@ -20,7 +28,36 @@ vi.mock('@/entities/movie/queries', async (importOriginal) => {
 
 const Home = (await import('./home')).default;
 
-const renderHome = () => render(<Home />);
+/** @typedef {import('@/shared/types/auth').Session} Session */
+
+const fakeSession = /** @type {Session} */ (
+  /** @type {unknown} */ ({
+    user: { id: 'user-1' },
+    access_token: 'jwt-1',
+    token_type: 'bearer',
+    expires_in: 3600,
+    refresh_token: 'r',
+  })
+);
+
+const makeStore = () =>
+  configureStore({
+    reducer: { hover: hoverReducer, user: userReducer },
+    preloadedState: {
+      user: {
+        session: fakeSession,
+        status: /** @type {const} */ ('authenticated'),
+        error: null,
+      },
+    },
+  });
+
+const renderHome = () =>
+  render(
+    <Provider store={makeStore()}>
+      <Home />
+    </Provider>,
+  );
 
 /** @typedef {import('@/entities/movie/types').Movie} Movie */
 /** @typedef {import('@/entities/movie/types').TmdbResponse<Movie>} MovieResponse */

@@ -4,6 +4,14 @@ import { act, render, screen, cleanup } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import hoverReducer from '@/features/trailer/hover-store';
+import userReducer from '@/entities/user/user-slice';
+
+const insertMock = vi.fn();
+vi.mock('@/shared/api/supabase', () => ({
+  supabase: {
+    from: vi.fn(() => ({ insert: insertMock })),
+  },
+}));
 
 vi.mock('@/entities/movie/queries', async () => {
   const actual = /** @type {object} */ (await vi.importActual('@/entities/movie/queries'));
@@ -15,8 +23,10 @@ vi.mock('@/entities/movie/queries', async () => {
 
 import { useMovieVideos } from '@/entities/movie/queries';
 import HoverTile from './hover-tile';
+import { __resetForTests } from '@/features/click-tracker/use-click-tracker';
 
 /** @typedef {import('@/entities/movie/types').Movie} Movie */
+/** @typedef {import('@/shared/types/auth').Session} Session */
 
 const mockedUseMovieVideos = vi.mocked(useMovieVideos);
 
@@ -39,10 +49,26 @@ const mockMovie = () => ({
   mediaType: 'movie',
 });
 
+const session = /** @type {Session} */ (
+  /** @type {unknown} */ ({
+    user: { id: 'user-1' },
+    access_token: 'jwt-1',
+    token_type: 'bearer',
+    expires_in: 3600,
+    refresh_token: 'r',
+  })
+);
+
+const makeStore = () =>
+  configureStore({
+    reducer: { hover: hoverReducer, user: userReducer },
+    preloadedState: {
+      user: { session, status: /** @type {const} */ ('authenticated'), error: null },
+    },
+  });
+
 const renderWithStore = (/** @type {React.ReactElement} */ ui) =>
-  render(
-    <Provider store={configureStore({ reducer: { hover: hoverReducer } })}>{ui}</Provider>,
-  );
+  render(<Provider store={makeStore()}>{ui}</Provider>);
 
 const dispatchMouse = (/** @type {Element} */ el, /** @type {string} */ type) =>
   act(() => {
@@ -51,6 +77,9 @@ const dispatchMouse = (/** @type {Element} */ el, /** @type {string} */ type) =>
 
 describe('HoverTile', () => {
   beforeEach(() => {
+    __resetForTests();
+    insertMock.mockReset();
+    insertMock.mockResolvedValue({ error: null });
     vi.useFakeTimers();
     mockedUseMovieVideos.mockReturnValue(
       /** @type {any} */ ({
@@ -65,6 +94,7 @@ describe('HoverTile', () => {
     cleanup();
     vi.useRealTimers();
     vi.clearAllMocks();
+    __resetForTests();
   });
 
   it('renders the tile poster and no player while idle', () => {
@@ -116,5 +146,52 @@ describe('HoverTile', () => {
     });
     expect(onClick).toHaveBeenCalledTimes(1);
     expect(onClick).toHaveBeenCalledWith(movie);
+  });
+
+  it('emits tile_click on click', async () => {
+    renderWithStore(<HoverTile movie={mockMovie()} variant="grid" onClick={vi.fn()} />);
+
+    act(() => {
+      screen.getByRole('button').click();
+    });
+    await act(async () => {
+      vi.advanceTimersByTime(2_000);
+      await Promise.resolve();
+    });
+    expect(insertMock).toHaveBeenCalledTimes(1);
+    expect(insertMock.mock.calls[0][0][0]).toMatchObject({
+      kind: 'tile_click',
+      tmdb_id: 27205,
+    });
+  });
+
+  it('emits hover_start once when the hover state machine first leaves idle', async () => {
+    renderWithStore(<HoverTile movie={mockMovie()} variant="grid" onClick={vi.fn()} />);
+
+    act(() => {
+      globalThis.__triggerIntersection({ isIntersecting: true, intersectionRatio: 1 });
+    });
+    dispatchMouse(screen.getByRole('button'), 'mouseenter');
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+    // Trigger another mouseenter cycle — hover_start must NOT fire twice.
+    dispatchMouse(screen.getByRole('button'), 'mouseleave');
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
+    dispatchMouse(screen.getByRole('button'), 'mouseenter');
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(2_000);
+      await Promise.resolve();
+    });
+    const allRows = insertMock.mock.calls.flatMap((c) => c[0]);
+    const hoverRows = allRows.filter((r) => r.kind === 'hover_start');
+    expect(hoverRows).toHaveLength(1);
+    expect(hoverRows[0]).toMatchObject({ kind: 'hover_start', tmdb_id: 27205 });
   });
 });

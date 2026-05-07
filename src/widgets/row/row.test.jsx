@@ -5,7 +5,12 @@ import userEvent from '@testing-library/user-event';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import hoverReducer from '@/features/trailer/hover-store';
+import userReducer from '@/entities/user/user-slice';
 import Row from './row';
+
+vi.mock('@/shared/api/supabase', () => ({
+  supabase: { from: vi.fn(() => ({ insert: vi.fn().mockResolvedValue({ error: null }) })) },
+}));
 
 vi.mock('@/entities/movie/queries', async () => {
   const actual = /** @type {object} */ (await vi.importActual('@/entities/movie/queries'));
@@ -16,6 +21,32 @@ vi.mock('@/entities/movie/queries', async () => {
 });
 
 /** @typedef {import('@/entities/movie/types').Movie} Movie */
+/** @typedef {import('@/shared/types/auth').Session} Session */
+
+const fakeSession = /** @type {Session} */ (
+  /** @type {unknown} */ ({
+    user: { id: 'user-1' },
+    access_token: 'jwt-1',
+    token_type: 'bearer',
+    expires_in: 3600,
+    refresh_token: 'r',
+  })
+);
+
+const makeStore = () =>
+  configureStore({
+    reducer: { hover: hoverReducer, user: userReducer },
+    preloadedState: {
+      user: {
+        session: fakeSession,
+        status: /** @type {const} */ ('authenticated'),
+        error: null,
+      },
+    },
+  });
+
+const renderRow = (/** @type {React.ReactElement} */ ui) =>
+  render(<Provider store={makeStore()}>{ui}</Provider>);
 
 /**
  * @param {number} n
@@ -42,19 +73,19 @@ const mockMovies = (n) =>
 
 describe('Row', () => {
   it('renders the title as an h2', () => {
-    render(<Row title="Trending" tiles={mockMovies(3)} />);
+    renderRow(<Row title="Trending" tiles={mockMovies(3)} />);
 
     expect(screen.getByRole('heading', { level: 2, name: 'Trending' })).toBeInTheDocument();
   });
 
   it('renders the caption when provided', () => {
-    render(<Row title="Trending" caption="Updated weekly" tiles={mockMovies(3)} />);
+    renderRow(<Row title="Trending" caption="Updated weekly" tiles={mockMovies(3)} />);
 
     expect(screen.getByText('Updated weekly')).toBeInTheDocument();
   });
 
   it('renders the optional badge slot when provided', () => {
-    render(
+    renderRow(
       <Row
         title="For you"
         tiles={mockMovies(3)}
@@ -66,19 +97,19 @@ describe('Row', () => {
   });
 
   it('omits the badge slot when not provided', () => {
-    render(<Row title="Trending" tiles={mockMovies(3)} />);
+    renderRow(<Row title="Trending" tiles={mockMovies(3)} />);
 
     expect(screen.queryByTestId('badge')).toBeNull();
   });
 
   it('returns null when tiles is empty', () => {
-    const { container } = render(<Row title="Trending" tiles={[]} />);
+    const { container } = renderRow(<Row title="Trending" tiles={[]} />);
 
     expect(container.firstChild).toBeNull();
   });
 
   it('eager-renders only the first 12 tiles in a 30-tile array', () => {
-    render(<Row title="Trending" tiles={mockMovies(30)} onTileClick={vi.fn()} />);
+    renderRow(<Row title="Trending" tiles={mockMovies(30)} onTileClick={vi.fn()} />);
 
     expect(screen.getAllByRole('button')).toHaveLength(12);
     expect(document.querySelectorAll('[data-placeholder]')).toHaveLength(18);
@@ -86,7 +117,7 @@ describe('Row', () => {
   });
 
   it('lazy-mounts remaining tiles when their placeholders intersect the viewport', () => {
-    render(<Row title="Trending" tiles={mockMovies(30)} onTileClick={vi.fn()} />);
+    renderRow(<Row title="Trending" tiles={mockMovies(30)} onTileClick={vi.fn()} />);
 
     act(() => {
       globalThis.__triggerIntersection({ isIntersecting: true });
@@ -97,7 +128,7 @@ describe('Row', () => {
   });
 
   it('marks the rail with horizontal scroll-snap', () => {
-    render(<Row title="Trending" tiles={mockMovies(3)} />);
+    renderRow(<Row title="Trending" tiles={mockMovies(3)} />);
 
     const scroller = /** @type {HTMLElement} */ (
       document.querySelector('[data-row-scroller]')
@@ -109,7 +140,7 @@ describe('Row', () => {
 
   it('moves focus to the next tile on ArrowRight inside the row', async () => {
     const user = userEvent.setup();
-    render(<Row title="Trending" tiles={mockMovies(5)} onTileClick={vi.fn()} />);
+    renderRow(<Row title="Trending" tiles={mockMovies(5)} onTileClick={vi.fn()} />);
     const buttons = screen.getAllByRole('button');
     buttons[0].focus();
 
@@ -120,7 +151,7 @@ describe('Row', () => {
 
   it('moves focus to the previous tile on ArrowLeft inside the row', async () => {
     const user = userEvent.setup();
-    render(<Row title="Trending" tiles={mockMovies(5)} onTileClick={vi.fn()} />);
+    renderRow(<Row title="Trending" tiles={mockMovies(5)} onTileClick={vi.fn()} />);
     const buttons = screen.getAllByRole('button');
     buttons[2].focus();
 
@@ -133,7 +164,7 @@ describe('Row', () => {
     const user = userEvent.setup();
     const onTileClick = vi.fn();
     const tiles = mockMovies(1);
-    render(<Row title="Trending" tiles={tiles} onTileClick={onTileClick} />);
+    renderRow(<Row title="Trending" tiles={tiles} onTileClick={onTileClick} />);
 
     await user.click(screen.getAllByRole('button')[0]);
 
@@ -142,11 +173,8 @@ describe('Row', () => {
   });
 
   it('renders without crashing when hoverPlayer is enabled (HoverTile path)', () => {
-    const store = configureStore({ reducer: { hover: hoverReducer } });
-    render(
-      <Provider store={store}>
-        <Row title="Trending" tiles={mockMovies(3)} hoverPlayer onTileClick={vi.fn()} />
-      </Provider>,
+    renderRow(
+      <Row title="Trending" tiles={mockMovies(3)} hoverPlayer onTileClick={vi.fn()} />,
     );
 
     expect(screen.getAllByRole('button')).toHaveLength(3);

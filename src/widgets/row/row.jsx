@@ -1,8 +1,8 @@
 // @ts-check
 import { useEffect, useRef, useState } from 'react';
-import Tile from '@/entities/movie/tile';
 import { tileVariants } from '@/entities/movie/tile-variants';
 import HoverTile from '@/features/trailer/hover-tile';
+import TrackedTile from '@/features/click-tracker/tracked-tile';
 
 /** @typedef {import('@/entities/movie/types').Movie} Movie */
 /** @typedef {import('@/entities/movie/tile-variants').TileVariant} TileVariant */
@@ -28,7 +28,7 @@ const RenderedTile = ({ movie, variant, onClick, hoverPlayer }) =>
   hoverPlayer ? (
     <HoverTile movie={movie} variant={variant} onClick={onClick} />
   ) : (
-    <Tile movie={movie} variant={variant} onClick={onClick} />
+    <TrackedTile movie={movie} variant={variant} onClick={onClick} />
   );
 
 /**
