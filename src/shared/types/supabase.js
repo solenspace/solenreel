@@ -15,6 +15,9 @@
  * @typedef {Database['public']['Tables']['events']['Insert']} EventInsert
  * @typedef {Database['public']['Tables']['events']['Update']} EventUpdate
  * @typedef {Database['public']['Enums']['event_kind']} EventKind
+ * @typedef {Database['public']['Tables']['recommendations']['Row']} Recommendation
+ * @typedef {Database['public']['Tables']['recommendations']['Insert']} RecommendationInsert
+ * @typedef {Database['public']['Tables']['recommendations']['Update']} RecommendationUpdate
  */
 
 export {};

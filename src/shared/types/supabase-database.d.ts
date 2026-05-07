@@ -55,6 +55,27 @@ export type Database = {
         }
         Relationships: []
       }
+      recommendations: {
+        Row: {
+          computed_at: string
+          computed_from_event_count: number
+          items: Json
+          user_id: string
+        }
+        Insert: {
+          computed_at?: string
+          computed_from_event_count?: number
+          items?: Json
+          user_id: string
+        }
+        Update: {
+          computed_at?: string
+          computed_from_event_count?: number
+          items?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
