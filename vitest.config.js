@@ -19,6 +19,10 @@ export default defineConfig(({ mode }) => ({
     setupFiles: ['./src/test-setup.js'],
     css: true,
     env: loadEnv(mode || 'test', process.cwd(), ''),
+    // Spec 17: Deno Edge Function tests live under supabase/functions/ and
+    // run via `deno test`, not vitest. Excluding the path keeps vitest
+    // from trying to transform JSR/npm: imports it can't resolve.
+    exclude: ['**/node_modules/**', '**/dist/**', 'supabase/functions/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
