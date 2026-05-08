@@ -369,10 +369,9 @@ authorization_url_path = "/oauth/consent"
 allow_dynamic_registration = false
 
 [edge_runtime]
-# Disabled in spec 04 — Edge Functions land in spec 17. The current
-# edge-runtime image (Supabase CLI 2.98.x) crashes on boot under Node 24
-# with `ERR_INVALID_PACKAGE_CONFIG`; re-enable when spec 17 starts.
-enabled = false
+# Enabled in spec 17 — first Edge Function (`recommendations`) lands here.
+# Deno v2 runtime; per-function blocks below.
+enabled = true
 # Supported request policies: `oneshot`, `per_worker`.
 # `per_worker` (default) — enables hot reload during local development.
 # `oneshot` — fallback mode if hot reload causes issues (e.g. in large repos or with symlinks).
@@ -414,3 +413,12 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 # declarative_schema_path = "./database"
 # JSON string passed through to pg-delta SQL formatting.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
+
+[functions.recommendations]
+enabled = true
+# Platform-level JWT verification fronts the function — invalid tokens 401
+# before our handler runs. The handler still calls auth.getUser() to derive
+# the user_id (belt-and-braces; the local serve also honours this flag).
+verify_jwt = true
+import_map = "./functions/recommendations/deno.json"
+entrypoint = "./functions/recommendations/index.ts"
